@@ -1,0 +1,2 @@
+Gemini : "https://gemini.google.com/u/9/app/c_78519e95436258d9?pageId=none"
+ChatGpt : "https://chatgpt.com/c/6949026c-b3ec-8322-a2d1-0e7f54e4a422"
