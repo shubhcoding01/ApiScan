@@ -9,15 +9,14 @@ from pydantic import BaseModel, Field
 # Request Schemas
 # -----------------------------
 
-class ApiVersionCreate(BaseModel):
+class SpecUploadRequest(BaseModel):
     """
-    Schema used when creating a new API version entry.
-    Usually created internally after spec upload.
+    Schema used when uploading a new OpenAPI/Swagger spec.
     """
     project_id: UUID
     version: str | None = Field(
         default=None,
-        example="v1.0.0"
+        example="v1.0.1"
     )
     spec_json: Dict[str, Any]
 
@@ -26,9 +25,18 @@ class ApiVersionCreate(BaseModel):
 # Response Schemas
 # -----------------------------
 
+class BreakingChangeResponse(BaseModel):
+    """
+    Represents a single breaking or non-breaking change.
+    """
+    change_type: str
+    field_path: str
+    description: str
+
+
 class ApiVersionResponse(BaseModel):
     """
-    Schema returned when fetching API version details.
+    Returned after uploading a spec.
     """
     id: UUID
     project_id: UUID
@@ -39,8 +47,9 @@ class ApiVersionResponse(BaseModel):
         from_attributes = True
 
 
-class ApiVersionListResponse(BaseModel):
+class SpecUploadResponse(BaseModel):
     """
-    Schema for listing API versions of a project.
+    Final response after spec upload.
     """
-    items: List[ApiVersionResponse]
+    api_version: ApiVersionResponse
+    breaking_changes: List[BreakingChangeResponse]
