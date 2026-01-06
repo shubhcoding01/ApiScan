@@ -1,10 +1,3 @@
-# from fastapi import FastAPI
-
-# app = FastAPI()
-
-# @app.get("/")
-# def read_root():
-#     return {"status": "active", "system": "ApiScan Backend"}
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
