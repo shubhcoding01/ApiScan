@@ -9,10 +9,15 @@ from app.models.secret_vault import SecretVault
 from app.models.project import Project
 from app.security import encrypt_secret
 from app.security import get_current_user
+# from app.schemas.secret_vault import (
+#     SecretCreate,
+#     SecretResponse
+# )
 from app.schemas.secret_vault import (
-    SecretCreate,
-    SecretResponse
+    SecretVaultCreate,
+    SecretVaultResponse
 )
+
 
 router = APIRouter(
     prefix="/secrets",
@@ -23,9 +28,9 @@ router = APIRouter(
 # ADD SECRET
 # ---------------------------------------------------------
 
-@router.post("/", response_model=SecretResponse)
+@router.post("/", response_model=SecretVaultResponse)
 def add_secret(
-    payload: SecretCreate,
+    payload: SecretVaultCreate,
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
@@ -60,7 +65,7 @@ def add_secret(
 # LIST SECRETS (SAFE)
 # ---------------------------------------------------------
 
-@router.get("/{project_id}", response_model=list[SecretResponse])
+@router.get("/{project_id}", response_model=list[SecretVaultResponse])
 def list_secrets(
     project_id: UUID,
     db: Session = Depends(get_db),
