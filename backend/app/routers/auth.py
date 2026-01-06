@@ -27,13 +27,21 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 # TEMP USER STORE (REPLACE WITH DB LATER)
 # ---------------------------------------------------------
 
+# FAKE_USER_DB = {
+#     "admin@apiscan.io": {
+#         "id": "00000000-0000-0000-0000-000000000001",
+#         "email": "admin@apiscan.io",
+#         "hashed_password": hash_password("admin123"),
+#     }
+# }
+
 FAKE_USER_DB = {
-    "admin@apiscan.io": {
-        "id": "00000000-0000-0000-0000-000000000001",
-        "email": "admin@apiscan.io",
-        "hashed_password": hash_password("admin123"),
+    "admin": {
+        "username": "admin",
+        "hashed_password": "$2b$12$KIXQ1kK9QxPZPp9ZJxZ9OeHc8l8XGQkY5Z9cP5Z9cP5Z9cP5Z9cP",
     }
 }
+
 
 
 # ---------------------------------------------------------
