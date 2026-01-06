@@ -28,7 +28,7 @@ class TestBlueprintCreate(BaseModel):
     )
 
 
-class TestBlueprintApprove(BaseModel):
+class TestBlueprintApproval(BaseModel):
     """
     Schema used when a user approves or rejects an AI-generated blueprint.
     """
