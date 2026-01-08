@@ -40,13 +40,21 @@ def create_project(
             detail="Project with this name already exists"
         )
 
+    # project = Project(
+    #     name=payload.name,
+    #     base_url=payload.base_url,
+    #     github_repo_url=payload.github_repo_url,
+    #     webhook_secret=secrets.token_urlsafe(32),
+    #     description=payload.description
+    # )
     project = Project(
-        name=payload.name,
-        base_url=payload.base_url,
-        github_repo_url=payload.github_repo_url,
-        webhook_secret=secrets.token_urlsafe(32),
-        description=payload.description
-    )
+    name=payload.name,
+    base_url=str(payload.base_url),  # ✅ convert
+    github_repo_url=str(payload.github_repo_url) if payload.github_repo_url else None,
+    webhook_secret=secrets.token_urlsafe(32),
+    description=payload.description
+)
+
 
     db.add(project)
     db.commit()
