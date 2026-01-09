@@ -131,38 +131,38 @@ def decrypt_secret(encrypted_value: str) -> str:
 # AUTH DEPENDENCY (FOR ROUTERS)
 # -------------------------------------------------------------------
 
-def get_current_user(token: str) -> dict:
-    """
-    Extracts and validates user from JWT token.
-    Used by protected routes.
-    """
-    payload = decode_access_token(token)
-
-    user_id: Optional[str] = payload.get("sub")
-    if user_id is None:
-        raise ValueError("Invalid token payload")
-
-    return payload
-
-# def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+# def get_current_user(token: str) -> dict:
 #     """
 #     Extracts and validates user from JWT token.
-#     Reads token from Authorization: Bearer <token>
+#     Used by protected routes.
 #     """
-#     try:
-#         payload = decode_access_token(token)
-#     except ValueError:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Invalid or expired token"
-#         )
+#     payload = decode_access_token(token)
 
-#     user_id = payload.get("sub")
-#     if not user_id:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Invalid token payload"
-#         )
+#     user_id: Optional[str] = payload.get("sub")
+#     if user_id is None:
+#         raise ValueError("Invalid token payload")
 
 #     return payload
+
+def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+    """
+    Extracts and validates user from JWT token.
+    Reads token from Authorization: Bearer <token>
+    """
+    try:
+        payload = decode_access_token(token)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
+
+    return payload
 
