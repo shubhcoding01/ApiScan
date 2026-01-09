@@ -62,11 +62,16 @@ def upload_spec(
     ).first()
 
     if existing:
+        # return SpecUploadResponse(
+        #     api_version_id=existing.id,
+        #     status="UNCHANGED",
+        #     breaking_changes=[]
+        # )
         return SpecUploadResponse(
-            api_version_id=existing.id,
-            status="UNCHANGED",
-            breaking_changes=[]
-        )
+    api_version=existing,
+    breaking_changes=[]
+)
+
 
     # -------------------------------------------------
     # FETCH PREVIOUS VERSION (IF ANY)
@@ -136,8 +141,13 @@ def upload_spec(
             }
         )
 
+    # return SpecUploadResponse(
+    #     api_version_id=api_version.id,
+    #     status="ACCEPTED",
+    #     breaking_changes=breaking_changes
+    # )
     return SpecUploadResponse(
-        api_version_id=api_version.id,
-        status="ACCEPTED",
-        breaking_changes=breaking_changes
-    )
+    api_version=api_version,
+    breaking_changes=breaking_changes
+)
+
