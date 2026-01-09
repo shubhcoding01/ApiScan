@@ -51,7 +51,6 @@ def add_secret(
         key_name=payload.key_name,
         encrypted_value=encrypted_value,
         environment=payload.environment,
-        scope=payload.scope
     )
 
     db.add(secret)
