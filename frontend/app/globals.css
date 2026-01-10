@@ -124,8 +124,12 @@
   }
 } */
 
-
+@import "tailwindcss";
 @import "tw-animate-css";
+@import "./variables.css";
+@import "./typography.css";
+@import "./components.css";
+
 
 :root {
   --foreground-rgb: 255, 255, 255;
