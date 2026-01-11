@@ -126,9 +126,10 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "./variables.css";
-@import "./typography.css";
-@import "./components.css";
+/* @import "./variables.css"; */
+/* @import "./typography.css"; */
+/* @import "./components.css"; */
+/* @import "tw-animate-css"; */
 
 
 :root {

@@ -39,7 +39,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 // // import "./globals.css"; // Ensure this path points to where your globals.css actually is (e.g., ./globals.css or ../styles/globals.css)
- // @ts-ignore: allow importing global css without type declarations
+//  @ts-ignore: allow importing global css without type declarations
 import "./globals.css";
 
 // 1. Load the "Inter" font (Professional & Clean)
