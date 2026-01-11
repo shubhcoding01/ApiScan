@@ -8,7 +8,7 @@ import {
   MoreVertical, 
   Clock 
 } from 'lucide-react';
-import { Project } from '@/types'; // Matches your shared interface
+import { Project } from '@/lib/types'; // Matches your shared interface
 
 interface ProjectCardProps {
   project: Project;

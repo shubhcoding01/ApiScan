@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Trash2, Copy, Check, EyeOff, Key } from 'lucide-react';
-import { Secret } from '@/types';
+import { Secret } from '@/lib/types';
 
 interface SecretTableProps {
   secrets: Secret[];
