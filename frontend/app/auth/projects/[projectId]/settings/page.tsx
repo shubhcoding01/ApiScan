@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Save, Trash2, Loader2, AlertTriangle } from 'lucide-react';
 
 import api from '@/lib/api';
-import { Project } from '@/types';
+import { Project } from '@/lib/types';
 import PageHeader from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
