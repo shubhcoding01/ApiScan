@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { Plus, Shield, Loader2, Save } from 'lucide-react';
 
 import api from '@/lib/api';
-import { Secret } from '@/types';
+import { Secret } from '@/lib/types';
 import PageHeader from '@/components/layout/PageHeader';
 import SecretTable from '@/components/secrets/SecretTable';
 import { Button } from '@/components/ui/button';
