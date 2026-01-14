@@ -38,7 +38,7 @@ export default function LoginForm() {
       localStorage.setItem('token', access_token);
 
       // 4. Redirect to Dashboard
-      router.push('/auth/dashboard');
+      router.push('/dashboard');
       
     } catch (err: any) {
       console.error("Login Failed", err);
