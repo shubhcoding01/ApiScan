@@ -47,7 +47,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 FAKE_USER_DB = {
     "admin": {
         "id": "00000000-0000-0000-0000-000000000001",
-        "username": "admin",
+        "username": "admin@apiscan.com",
         "hashed_password": "$argon2id$v=19$m=65536,t=3,p=4$ekwciWCZitwx4Peg3TFCUw$IvoL2QB35r24yhYx/DWYcLg7ZE6h6HBqBT+dXnVrw5E",
         # "hashed_password": hash_password("admin123"),
 

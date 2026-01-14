@@ -38,7 +38,7 @@ export default function LoginForm() {
       localStorage.setItem('token', access_token);
 
       // 4. Redirect to Dashboard
-      router.push('/dashboard');
+      router.push('/auth/dashboard');
       
     } catch (err: any) {
       console.error("Login Failed", err);
@@ -123,7 +123,7 @@ export default function LoginForm() {
 
       <div className="mt-6 text-center text-sm text-zinc-500">
         Don't have an account?{' '}
-        <Link href="/register" className="text-blue-500 hover:text-blue-400 font-medium">
+        <Link href="/auth/register" className="text-blue-500 hover:text-blue-400 font-medium">
           Create one
         </Link>
       </div>
