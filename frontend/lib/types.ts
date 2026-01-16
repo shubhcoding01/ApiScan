@@ -107,6 +107,7 @@ export interface Secret {
 // 3. API VERSIONS
 // ---------------------------------------------------------
 export interface ApiVersion {
+  status(status: any): import("react").ReactNode;
   id: string;
   project_id: string;
   version?: string;
