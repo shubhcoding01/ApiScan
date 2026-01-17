@@ -16,11 +16,13 @@ export default function CreateProjectModal({
   onSuccess,
 }: CreateProjectModalProps) {
 
+  // Form State
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [repoUrl, setRepoUrl] = useState('');
 
+  // UI State
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,31 +53,30 @@ export default function CreateProjectModal({
     setIsLoading(true);
     setError(null);
 
-    // Helper to fix URLs (Pydantic requires http:// or https://)
+    // 🛠️ HELPER: Fix URLs for Pydantic
+    // 1. Convert empty string "" to null (Fixes 422 Error)
+    // 2. Add https:// if missing (Fixes Validation Error)
     const formatUrl = (url: string) => {
       const trimmed = url.trim();
-      if (!trimmed) return null; // If empty, return null
+      if (!trimmed) return null; 
       if (!/^https?:\/\//i.test(trimmed)) {
-        return `https://${trimmed}`; // Auto-add https:// if missing
+        return `https://${trimmed}`;
       }
       return trimmed;
     };
 
     try {
-      // 1. Prepare Payload
       const payload = {
         name: name,
         description: description.trim() || null,
-        // Ensure base_url is formatted correctly (Required field)
-        base_url: formatUrl(baseUrl) || undefined, 
-        // Ensure repo_url is formatted correctly (Optional field)
-        github_repo_url: formatUrl(repoUrl)
+        base_url: formatUrl(baseUrl),         // Required by backend
+        github_repo_url: formatUrl(repoUrl),  // Optional
       };
 
-      // 2. Send to Backend
+      console.log("Submitting:", payload); // Debug log
+
       await api.post('/projects/', payload);
 
-      // 3. Cleanup
       resetForm();
       onSuccess();
       onClose();
@@ -83,24 +84,23 @@ export default function CreateProjectModal({
     } catch (err: any) {
       console.error('Create project failed:', err);
       
-      // Safely extract validation error
+      // 🛡️ SAFE ERROR HANDLING (Prevents React Crash)
       const detail = err.response?.data?.detail;
       let msg = 'Failed to create project';
 
       if (Array.isArray(detail)) {
-        // Handle Pydantic's list of errors
+        // Handle FastAPI/Pydantic list of errors
         msg = detail.map((e: any) => {
-          const field = e.loc[1];
-          // user-friendly messages
-          if (field === 'base_url') return "Base URL must be a valid URL (e.g. https://...)";
-          if (field === 'github_repo_url') return "Repo URL must be a valid URL";
+          // e.loc is like ['body', 'base_url'], we want the last part
+          const field = e.loc[e.loc.length - 1]; 
           return `${field}: ${e.msg}`;
-        }).join(', ');
+        }).join(' | ');
       } else if (typeof detail === 'string') {
         msg = detail;
       }
       
       setError(msg);
+      
     } finally {
       setIsLoading(false);
     }
@@ -129,6 +129,7 @@ export default function CreateProjectModal({
             </div>
           )}
 
+          {/* Name */}
           <div className="space-y-2">
             <label className="text-sm text-zinc-300">
               Project Name <span className="text-red-500">*</span>
@@ -142,21 +143,26 @@ export default function CreateProjectModal({
             />
           </div>
 
+          {/* Description */}
           <div className="space-y-2">
             <label className="text-sm text-zinc-300">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description..."
               className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white h-24 resize-none focus:ring-2 focus:ring-blue-600 outline-none"
             />
           </div>
 
+          {/* URLs */}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-zinc-300">Base URL</label>
+              <label className="text-sm text-zinc-300">
+                Base URL <span className="text-red-500">*</span>
+              </label>
               <input
-                type="url"
-                placeholder="https://api.example.com"
+                type="text" // 'text' allows pasting 'api.com' so our helper can fix it
+                placeholder="api.example.com"
                 value={baseUrl}
                 onChange={(e) => setBaseUrl(e.target.value)}
                 className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-600 outline-none"
@@ -165,8 +171,8 @@ export default function CreateProjectModal({
             <div className="space-y-2">
               <label className="text-sm text-zinc-300">GitHub Repo URL</label>
               <input
-                type="url"
-                placeholder="https://github.com/org/repo"
+                type="text"
+                placeholder="github.com/org/repo"
                 value={repoUrl}
                 onChange={(e) => setRepoUrl(e.target.value)}
                 className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-600 outline-none"
@@ -174,6 +180,7 @@ export default function CreateProjectModal({
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800">
             <button type="button" onClick={onClose} className="text-zinc-400 hover:text-white px-4 py-2">
               Cancel
