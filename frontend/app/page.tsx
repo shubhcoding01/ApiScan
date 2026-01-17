@@ -6,7 +6,6 @@ import {
   Zap, 
   Bot, 
   FileJson, 
-  CheckCircle, 
   Terminal 
 } from 'lucide-react';
 
@@ -24,10 +23,12 @@ export default function LandingPage() {
             <span className="text-xl font-bold tracking-tight">ApiScan</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/auth/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
+            {/* UPDATED LINK */}
+            <Link href="/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
               Sign In
             </Link>
-            <Link href="/auth/login">
+            {/* UPDATED LINK */}
+            <Link href="/login">
               <Button size="sm" className="bg-white text-black hover:bg-zinc-200">
                 Get Started
               </Button>
@@ -60,7 +61,8 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth/login">
+            {/* UPDATED LINK */}
+            <Link href="/login">
               <Button size="lg" className="h-12 px-8 text-base bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20">
                 Start Testing Free
                 <ArrowRight className="ml-2 w-5 h-5" />
