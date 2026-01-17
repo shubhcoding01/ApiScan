@@ -258,7 +258,7 @@ export default function SettingsPage() {
   // Logout (REAL)
   const handleLogout = () => {
     removeToken();
-    window.location.href = '/auth/login';
+    window.location.href = '/login';
   };
 
   if (isLoading) {

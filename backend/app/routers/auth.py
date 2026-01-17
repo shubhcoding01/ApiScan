@@ -107,8 +107,10 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = decode_access_token(token)
         return {
-            "user_id": payload.get("sub"),
-            "message": "Authenticated"
+            # "user_id": payload.get("sub"),
+            # "message": "Authenticated"
+              "id": payload.get("sub"),
+              "email": "admin@apiscan.com"
         }
     except Exception:
         raise HTTPException(

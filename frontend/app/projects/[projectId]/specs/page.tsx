@@ -196,12 +196,12 @@ export default function SpecsPage() {
   useEffect(() => {
     const token = getToken();
     if (!token) {
-      router.replace('/auth/login');
+      router.replace('/login');
       return;
     }
 
     api.get('/auth/me').catch(() => {
-      router.replace('/auth/login');
+      router.replace('/login');
     });
   }, [router]);
 

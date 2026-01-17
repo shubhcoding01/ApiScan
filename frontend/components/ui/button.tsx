@@ -62,54 +62,122 @@
 // export { Button, buttonVariants }
 
 
+// import * as React from "react"
+// import { Loader2 } from "lucide-react"
+
+// // Simple utility to merge class names (you can use clsx/tailwind-merge if installed, but this is fine for now)
+// const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ")
+
+// interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+//   variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary'
+//   size?: 'default' | 'sm' | 'lg' | 'icon'
+//   isLoading?: boolean
+// }
+
+// const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+//   ({ className, variant = 'default', size = 'default', isLoading, children, ...props }, ref) => {
+    
+//     // Base Styles
+//     const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+    
+//     // Variants
+//     const variants = {
+//       default: "bg-blue-600 text-white hover:bg-blue-700",
+//       destructive: "bg-red-500 text-white hover:bg-red-600",
+//       outline: "border border-zinc-800 bg-transparent hover:bg-zinc-800 text-zinc-100",
+//       secondary: "bg-zinc-800 text-zinc-100 hover:bg-zinc-700",
+//       ghost: "hover:bg-zinc-800 hover:text-zinc-100",
+//     }
+    
+//     // Sizes
+//     const sizes = {
+//       default: "h-10 px-4 py-2",
+//       sm: "h-9 rounded-md px-3",
+//       lg: "h-11 rounded-md px-8",
+//       icon: "h-10 w-10",
+//     }
+
+//     return (
+//       <button
+//         className={cn(baseStyles, variants[variant], sizes[size], className)}
+//         ref={ref}
+//         disabled={isLoading || props.disabled}
+//         {...props}
+//       >
+//         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+//         {children}
+//       </button>
+//     )
+//   }
+// )
+// Button.displayName = "Button"
+
+// export { Button }
+
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
 import { Loader2 } from "lucide-react"
 
-// Simple utility to merge class names (you can use clsx/tailwind-merge if installed, but this is fine for now)
-const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ")
+import { cn } from "@/lib/utils"
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary'
-  size?: 'default' | 'sm' | 'lg' | 'icon'
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        // Updated to match your specific Blue/Zinc Theme
+        default:
+          "bg-blue-600 text-white shadow hover:bg-blue-700",
+        destructive:
+          "bg-red-500 text-white shadow-sm hover:bg-red-600",
+        outline:
+          "border border-zinc-800 bg-transparent shadow-sm hover:bg-zinc-800 text-zinc-100",
+        secondary:
+          "bg-zinc-800 text-zinc-100 shadow-sm hover:bg-zinc-700",
+        ghost:
+          "hover:bg-zinc-800 hover:text-zinc-100",
+        link: 
+          "text-blue-500 underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
   isLoading?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'default', isLoading, children, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, isLoading = false, children, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
     
-    // Base Styles
-    const baseStyles = "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-    
-    // Variants
-    const variants = {
-      default: "bg-blue-600 text-white hover:bg-blue-700",
-      destructive: "bg-red-500 text-white hover:bg-red-600",
-      outline: "border border-zinc-800 bg-transparent hover:bg-zinc-800 text-zinc-100",
-      secondary: "bg-zinc-800 text-zinc-100 hover:bg-zinc-700",
-      ghost: "hover:bg-zinc-800 hover:text-zinc-100",
-    }
-    
-    // Sizes
-    const sizes = {
-      default: "h-10 px-4 py-2",
-      sm: "h-9 rounded-md px-3",
-      lg: "h-11 rounded-md px-8",
-      icon: "h-10 w-10",
-    }
-
     return (
-      <button
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={isLoading || props.disabled}
         {...props}
       >
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isLoading && <Loader2 className="animate-spin" />}
         {children}
-      </button>
+      </Comp>
     )
   }
 )
 Button.displayName = "Button"
 
-export { Button }
+export { Button, buttonVariants }
