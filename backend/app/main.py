@@ -12,7 +12,10 @@ from app.routers import (
     test_runs,
     webhooks,
 )
-
+# --- ADD THESE 2 LINES ---
+from dotenv import load_dotenv
+load_dotenv()  # This reads the .env file and loads it into os.getenv
+# -------------------------
 # ---------------------------------------------------------
 # DATABASE INIT
 # ---------------------------------------------------------
