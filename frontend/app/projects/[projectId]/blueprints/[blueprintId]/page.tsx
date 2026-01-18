@@ -11,8 +11,7 @@ import {
   ChevronRight,
   Play,
   Loader2,
-  AlertTriangle,
-  FileText
+  AlertTriangle
 } from 'lucide-react';
 
 import api from '@/lib/api';
@@ -29,11 +28,16 @@ export default function BlueprintDetailsPage() {
   const projectId = params?.projectId as string;
   const blueprintId = params?.blueprintId as string;
 
+  // --- STATE ---
   const [blueprint, setBlueprint] = useState<TestBlueprint | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [expandedScenario, setExpandedScenario] = useState<string | null>(null);
+  
+  // NEW: State for the Run Button
+  const [isRunning, setIsRunning] = useState(false);
 
+  // --- FETCH DATA ---
   useEffect(() => {
     if (!blueprintId) return;
 
@@ -56,6 +60,30 @@ export default function BlueprintDetailsPage() {
 
     fetchBlueprint();
   }, [blueprintId]);
+
+  // --- NEW: RUN TESTS LOGIC ---
+  const handleRunTests = async () => {
+    if (!blueprintId) return;
+    
+    setIsRunning(true);
+    try {
+      // 1. Call the backend execution endpoint
+      const { data } = await api.post(`/test-blueprints/${blueprintId}/run`);
+      
+      // 2. Show Success Message
+      alert(`✅ Execution Complete!\n\nPassed: ${data.passed}\nFailed: ${data.failed}`);
+      
+      // Future: You can redirect to a Results page here
+      // router.push(`/projects/${projectId}/runs/${data.run_id}`);
+      
+    } catch (err: any) {
+      console.error('Run failed', err);
+      const msg = err.response?.data?.detail || 'Failed to execute tests.';
+      alert(`❌ Error: ${msg}`);
+    } finally {
+      setIsRunning(false);
+    }
+  };
 
   // --- LOADING STATE ---
   if (loading) return (
@@ -100,11 +128,26 @@ export default function BlueprintDetailsPage() {
             <PageHeader 
                 title={summary.length > 60 ? summary.slice(0, 60) + '...' : summary}
                 description={`Generated on ${new Date(blueprint.created_at).toLocaleString()}`}
-                
+                className="mb-0 border-b-0 pb-0"
             />
-            <Button className="bg-green-600 hover:bg-green-500 text-white shrink-0">
-                <Play className="w-4 h-4 mr-2" />
-                Approve & Run Tests
+            
+            {/* UPDATED RUN BUTTON */}
+            <Button 
+                onClick={handleRunTests} 
+                disabled={isRunning}
+                className="bg-green-600 hover:bg-green-500 text-white shrink-0"
+            >
+                {isRunning ? (
+                    <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Running Tests...
+                    </>
+                ) : (
+                    <>
+                        <Play className="w-4 h-4 mr-2" />
+                        Approve & Run Tests
+                    </>
+                )}
             </Button>
         </div>
       </div>
