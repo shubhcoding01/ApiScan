@@ -6,7 +6,8 @@ import {
   Zap, 
   Bot, 
   FileJson, 
-  Terminal 
+  Terminal,
+  Menu // Added for mobile menu icon if needed later
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -16,24 +17,49 @@ export default function LandingPage() {
       {/* 1. Navbar */}
       <nav className="border-b border-zinc-800 bg-black/50 backdrop-blur-md fixed top-0 w-full z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          
+          {/* LEFT: Logo */}
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">
               A
             </div>
             <span className="text-xl font-bold tracking-tight">ApiScan</span>
           </div>
+
+          {/* CENTER: Navigation Links (Hidden on small mobile screens) */}
+          <div className="hidden md:flex items-center gap-8">
+            <Link 
+              href="/docs" 
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              Documentation
+            </Link>
+            <Link 
+              href="/pricing" 
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link 
+              href="/blog" 
+              className="text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+            >
+              Blog
+            </Link>
+          </div>
+
+          {/* RIGHT: Auth Buttons */}
           <div className="flex items-center gap-4">
-            {/* UPDATED LINK */}
             <Link href="/login" className="text-sm font-medium text-zinc-400 hover:text-white transition-colors">
               Sign In
             </Link>
-            {/* UPDATED LINK */}
             <Link href="/login">
               <Button size="sm" className="bg-white text-black hover:bg-zinc-200">
                 Get Started
               </Button>
             </Link>
           </div>
+          
         </div>
       </nav>
 
@@ -61,7 +87,6 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* UPDATED LINK */}
             <Link href="/login">
               <Button size="lg" className="h-12 px-8 text-base bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20">
                 Start Testing Free
@@ -190,10 +215,6 @@ export default function LandingPage() {
                     <span className="text-zinc-500">[10:02:52]</span>
                     <span className="text-red-400">FAIL</span>
                     <span className="text-zinc-300">SQL Injection detected on /search</span>
-                  </div>
-                  <div className="flex gap-2 animate-pulse">
-                    <span className="text-zinc-500">[10:02:53]</span>
-                    <span className="text-zinc-500">...</span>
                   </div>
                 </div>
               </div>
