@@ -114,6 +114,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from datetime import datetime
 
+from app.services.blueprint_service import generate_and_save_blueprint
 from app.database import get_db
 from app.security import get_current_user
 from app.models.test_blueprint import TestBlueprint
