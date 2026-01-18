@@ -1,11 +1,11 @@
 import os
 import json
 import logging
-import google.generativeai as genai
+import google.generativeai as genai # type: ignore
 from fastapi import HTTPException
 
 # Import the prompt generator we just created
-from app.ai.prompts import get_blueprint_prompt
+from app.ai.prompts import get_blueprint_prompt # type: ignore
 
 # Setup Logger
 logger = logging.getLogger(__name__)

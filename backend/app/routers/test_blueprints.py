@@ -241,3 +241,17 @@ def approve_or_reject_blueprint(
     db.refresh(blueprint)
 
     return blueprint
+
+@router.post("/generate/{api_version_id}", response_model=TestBlueprintResponse)
+def generate_blueprint_endpoint(
+    api_version_id: UUID,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user)
+):
+    try:
+        # One clean line of logic!
+        return generate_and_save_blueprint(db, api_version_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
