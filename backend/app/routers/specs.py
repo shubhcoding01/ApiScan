@@ -157,6 +157,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from uuid import UUID
 
+
 from app.database import get_db
 from app.models.project import Project
 from app.models.api_version import ApiVersion
@@ -302,3 +303,188 @@ def list_project_specs(
     )
 
     return specs
+
+# import hashlib
+# import json  # ✅ Moved to top level
+# from fastapi import APIRouter, Depends, HTTPException, status
+# from sqlalchemy.orm import Session
+# from uuid import UUID
+# from pydantic import BaseModel # ✅ Added missing import
+
+# from app.database import get_db
+# from app.models.project import Project
+# from app.models.api_version import ApiVersion
+# from app.models.breaking_change import BreakingChangeLog
+# from app.security import get_current_user
+# from app.services.diff_service import detect_breaking_changes
+# from app.services.spec_generator import generate_swagger_from_text
+# from app.schemas.specs import (
+#     SpecUploadRequest,
+#     SpecUploadResponse
+# )
+
+# router = APIRouter(
+#     prefix="/specs",
+#     tags=["Specs"]
+# )
+
+# # ---------------------------------------------------------
+# # 1. UPLOAD OPENAPI SPEC
+# # ---------------------------------------------------------
+
+# @router.post("/upload", response_model=SpecUploadResponse)
+# def upload_spec(
+#     payload: SpecUploadRequest,
+#     db: Session = Depends(get_db),
+#     user=Depends(get_current_user)
+# ):
+#     """
+#     Upload an OpenAPI / Swagger spec for a project.
+#     Handles de-duplication, versioning, and breaking change detection.
+#     """
+
+#     project = db.query(Project).filter(
+#         Project.id == payload.project_id
+#     ).first()
+
+#     if not project:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="Project not found"
+#         )
+
+#     # --- HASHING & DE-DUPLICATION ---
+#     # Convert JSON to string to create a hash
+#     spec_str = json.dumps(payload.spec_json, sort_keys=True)
+#     spec_bytes = spec_str.encode("utf-8")
+#     spec_hash = hashlib.sha256(spec_bytes).hexdigest()
+
+#     existing = db.query(ApiVersion).filter(
+#         ApiVersion.spec_hash == spec_hash,
+#         ApiVersion.project_id == payload.project_id 
+#     ).first()
+
+#     if existing:
+#         return SpecUploadResponse(
+#             api_version=existing,
+#             breaking_changes=[]
+#         )
+
+#     # --- FETCH PREVIOUS VERSION ---
+#     previous_version = (
+#         db.query(ApiVersion)
+#         .filter(ApiVersion.project_id == payload.project_id)
+#         .order_by(ApiVersion.created_at.desc())
+#         .first()
+#     )
+
+#     # --- CREATE NEW VERSION ---
+#     api_version = ApiVersion(
+#         project_id=payload.project_id,
+#         version=payload.version,
+#         spec_hash=spec_hash,
+#         spec_json=payload.spec_json
+#     )
+
+#     db.add(api_version)
+#     db.flush()  # Generate ID
+
+#     breaking_changes = []
+
+#     # --- DETECT BREAKING CHANGES ---
+#     if previous_version:
+#         changes = detect_breaking_changes(
+#             old_spec=previous_version.spec_json,
+#             new_spec=payload.spec_json
+#         )
+
+#         for change in changes:
+#             log = BreakingChangeLog(
+#                 api_version_id=api_version.id,
+#                 change_type=change["change_type"],
+#                 field_path=change["field_path"],
+#                 description=change["description"],
+#                 category=change.get("category")
+#             )
+#             db.add(log)
+#             breaking_changes.append(change)
+
+#     db.commit()
+
+#     # --- CI GATE ---
+#     has_critical = any(
+#         c["change_type"] == "CRITICAL"
+#         for c in breaking_changes
+#     )
+
+#     if has_critical and project.ci_enabled:
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail={
+#                 "message": "Breaking changes detected",
+#                 "breaking_changes": breaking_changes
+#             }
+#         )
+
+#     return SpecUploadResponse(
+#         api_version=api_version,
+#         breaking_changes=breaking_changes
+#     )
+
+
+# # ---------------------------------------------------------
+# # 2. GET LATEST SPEC
+# # ---------------------------------------------------------
+
+# @router.get("/{project_id}")
+# def list_project_specs(
+#     project_id: UUID,
+#     db: Session = Depends(get_db),
+#     user=Depends(get_current_user)
+# ):
+#     """
+#     Get ALL API Versions for a project (Version History).
+#     Returns a list ordered by creation date (newest first).
+#     """
+#     specs = (
+#         db.query(ApiVersion)
+#         .filter(ApiVersion.project_id == project_id)
+#         .order_by(ApiVersion.created_at.desc())
+#         .all()
+#     )
+
+#     return specs
+
+
+# # ---------------------------------------------------------
+# # 3. GENERATE SPEC WITH AI
+# # ---------------------------------------------------------
+
+# class GenerateSpecRequest(BaseModel):
+#     description: str
+
+# @router.post("/{project_id}/generate")
+# def generate_spec_endpoint(
+#     project_id: str, 
+#     payload: GenerateSpecRequest,
+#     db: Session = Depends(get_db),
+#     user=Depends(get_current_user)
+# ):
+#     """
+#     Generates a new API Version using Google Gemini based on a text prompt.
+#     """
+#     try:
+#         # Calls the service function which:
+#         # 1. Calls Gemini
+#         # 2. Creates ApiSpec/ApiVersion records in DB
+#         # 3. Returns the new object
+        
+#         spec = generate_swagger_from_text(db, project_id, payload.description)
+        
+#         return {
+#             "id": spec.id, 
+#             "name": getattr(spec, "name", "AI Generated Spec"), 
+#             "status": "CREATED"
+#         }
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
