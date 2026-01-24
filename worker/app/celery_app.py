@@ -1,64 +1,78 @@
-# worker/celery_app.py
 """
 Celery Application Configuration for ApiScan Worker
 
-This file configures the Celery task queue system that handles
-asynchronous test execution.
+Responsibilities:
+- Background execution of test runs
+- AI blueprint generation
+- Async, scalable processing
+
+IMPORTANT:
+- Worker does NOT access database
+- Worker communicates with backend via HTTP only
 """
 
 import os
 from celery import Celery
 from dotenv import load_dotenv
 
-# Load environment variables
+# ----------------------------------------------------
+# ENV
+# ----------------------------------------------------
 load_dotenv()
 
-# Redis connection URL
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-# Database URL (same as backend)
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Create Celery app
+# ----------------------------------------------------
+# CELERY APP
+# ----------------------------------------------------
 celery_app = Celery(
     "apiscan_worker",
-    broker=REDIS_URL,           # Message broker (queue)
-    backend=REDIS_URL,          # Result backend (store results)
-    include=["tasks"]           # Import tasks module
+    broker=REDIS_URL,
+    backend=REDIS_URL,
+    include=[
+        "worker.app.tasks.execute_test_run",
+        "worker.app.tasks.generate_test_blueprint",
+        "worker.app.tasks.ingest_spec",
+        "worker.app.tasks.detect_breaking_changes",
+    ],
 )
 
-# Celery Configuration
+# ----------------------------------------------------
+# CELERY CONFIG
+# ----------------------------------------------------
 celery_app.conf.update(
-    # Task settings
+    # Serialization
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
+
+    # Timezone
     timezone="UTC",
     enable_utc=True,
-    
-    # Task execution settings
+
+    # Execution control
     task_track_started=True,
-    task_time_limit=300,        # 5 minutes max per task
-    task_soft_time_limit=240,   # 4 minutes soft limit
-    
-    # Result settings
-    result_expires=3600,        # Results expire after 1 hour
-    result_persistent=True,
-    
-    # Worker settings
-    worker_prefetch_multiplier=1,
-    worker_max_tasks_per_child=50,
-    
-    # Retry settings
+    task_time_limit=300,       # hard limit (5 min)
+    task_soft_time_limit=240,  # soft limit (4 min)
+
+    # Reliability
     task_acks_late=True,
     task_reject_on_worker_lost=True,
+
+    # Worker tuning
+    worker_prefetch_multiplier=1,
+    worker_max_tasks_per_child=50,
+
+    # Results
+    result_expires=3600,       # 1 hour
 )
 
-# Task routes (optional - for multiple queues)
+# ----------------------------------------------------
+# QUEUE ROUTING
+# ----------------------------------------------------
 celery_app.conf.task_routes = {
     "tasks.execute_test_run": {"queue": "test_execution"},
-    "tasks.generate_blueprint": {"queue": "ai_generation"},
+    "tasks.generate_test_blueprint": {"queue": "ai_generation"},
+    "tasks.ingest_spec": {"queue": "spec_ingestion"},
+    "tasks.detect_breaking_changes": {"queue": "diff_analysis"},
 }
-
-if __name__ == "__main__":
-    celery_app.start()
