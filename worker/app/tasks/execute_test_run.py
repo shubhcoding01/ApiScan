@@ -1,22 +1,20 @@
 """
-Celery Task: Execute Test Run
+Celery Task: Execute Test Run (Worker)
 
-This task executes an approved TestBlueprint by:
-1. Reading test cases from blueprint JSON
-2. Making real HTTP requests
-3. Storing results back into database
-4. Updating test run status
+Responsibilities:
+- Execute HTTP test cases
+- Collect raw results
+- Send results back to backend API
 """
 
+import os
 import requests
 from datetime import datetime
 
 from celery_app import celery_app
-from sqlalchemy.orm import Session
+from worker.app.runner.result_parser import ResultParser
 
-from app.database import SessionLocal
-from app.models.test_run import TestRun, TestResult
-from app.models.test_blueprint import TestBlueprint
+BACKEND_API = os.getenv("BACKEND_API_URL", "http://localhost:8000/api")
 
 
 @celery_app.task(
@@ -26,121 +24,64 @@ from app.models.test_blueprint import TestBlueprint
     retry_backoff=10,
     retry_kwargs={"max_retries": 3},
 )
-def execute_test_run(self, test_run_id: str):
+def execute_test_run(self, payload: dict):
     """
-    Executes a TestRun.
-
-    Args:
-        test_run_id (str): UUID of TestRun
+    payload = {
+        "test_run_id": "...",
+        "base_url": "...",
+        "test_cases": [...]
+    }
     """
 
-    db: Session = SessionLocal()
+    test_run_id = payload["test_run_id"]
+    base_url = payload["base_url"]
+    test_cases = payload["test_cases"]
 
-    try:
-        # --------------------------------------------------
-        # 1. Fetch Test Run
-        # --------------------------------------------------
-        test_run = db.query(TestRun).filter(TestRun.id == test_run_id).first()
-        if not test_run:
-            raise Exception("TestRun not found")
+    raw_results = []
 
-        blueprint = (
-            db.query(TestBlueprint)
-            .filter(TestBlueprint.id == test_run.blueprint_id)
-            .first()
-        )
-        if not blueprint:
-            raise Exception("Blueprint not found")
+    for tc in test_cases:
+        try:
+            response = requests.request(
+                method=tc["method"],
+                url=f"{base_url}{tc['endpoint']}",
+                headers=tc.get("headers", {}),
+                json=tc.get("body"),
+                timeout=10,
+            )
 
-        # --------------------------------------------------
-        # 2. Mark Run as RUNNING
-        # --------------------------------------------------
-        test_run.status = "RUNNING"
-        test_run.started_at = datetime.utcnow()
-        db.commit()
+            raw_results.append({
+                "test_case_id": tc["id"],
+                "name": tc["name"],
+                "method": tc["method"],
+                "endpoint": tc["endpoint"],
+                "status_code": response.status_code,
+                "result": "PASS" if 200 <= response.status_code < 300 else "FAIL",
+                "response_body": response.text[:2000],
+                "duration_ms": response.elapsed.total_seconds() * 1000,
+            })
 
-        test_cases = blueprint.ai_strategy_json.get("test_cases", [])
-        results = []
+        except Exception as e:
+            raw_results.append({
+                "test_case_id": tc["id"],
+                "name": tc["name"],
+                "method": tc["method"],
+                "endpoint": tc["endpoint"],
+                "status_code": 0,
+                "result": "ERROR",
+                "error_message": str(e),
+            })
 
-        passed = 0
-        failed = 0
+    # Parse results
+    parsed = ResultParser.parse(raw_results)
 
-        # --------------------------------------------------
-        # 3. Execute Each Test Case
-        # --------------------------------------------------
-        for tc in test_cases:
-            try:
-                method = tc.get("method", "GET").upper()
-                url = tc.get("url")
-                headers = tc.get("headers", {})
-                payload = tc.get("body")
-
-                response = requests.request(
-                    method=method,
-                    url=url,
-                    headers=headers,
-                    json=payload,
-                    timeout=10,
-                )
-
-                is_pass = 200 <= response.status_code < 300
-
-                result = TestResult(
-                    test_run_id=test_run.id,
-                    test_case_id=tc.get("id"),
-                    name=tc.get("name"),
-                    method=method,
-                    endpoint=url,
-                    status_code=response.status_code,
-                    result="PASS" if is_pass else "FAIL",
-                    response_body=response.text[:2000],
-                )
-
-                db.add(result)
-
-                if is_pass:
-                    passed += 1
-                else:
-                    failed += 1
-
-            except Exception as e:
-                failed += 1
-                db.add(
-                    TestResult(
-                        test_run_id=test_run.id,
-                        test_case_id=tc.get("id"),
-                        name=tc.get("name"),
-                        method=tc.get("method"),
-                        endpoint=tc.get("url"),
-                        status_code=0,
-                        result="ERROR",
-                        error_message=str(e),
-                    )
-                )
-
-        # --------------------------------------------------
-        # 4. Finalize Run
-        # --------------------------------------------------
-        test_run.status = "COMPLETED" if failed == 0 else "FAILED"
-        test_run.finished_at = datetime.utcnow()
-        test_run.reliability_score = int(
-            (passed / max(len(test_cases), 1)) * 100
-        )
-
-        db.commit()
-
-    except Exception as e:
-        test_run.status = "FAILED"
-        test_run.logs = str(e)
-        db.commit()
-        raise
-
-    finally:
-        db.close()
+    # Send results back to backend
+    requests.post(
+        f"{BACKEND_API}/test-runs/{test_run_id}/complete",
+        json=parsed,
+        timeout=10,
+    )
 
     return {
         "test_run_id": test_run_id,
-        "status": test_run.status,
-        "passed": passed,
-        "failed": failed,
+        "status": "COMPLETED",
     }
