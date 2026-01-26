@@ -1,0 +1,44 @@
+name: ApiScan – Automated API Security Scan
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+
+jobs:
+  apiscan:
+    runs-on: ubuntu-latest
+
+    steps:
+      # -------------------------------
+      # 1️⃣ Checkout Repository
+      # -------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -------------------------------
+      # 2️⃣ Setup Bash Environment
+      # -------------------------------
+      - name: Make scripts executable
+        run: chmod +x ci/scripts/extract_openapi.sh
+
+      # -------------------------------
+      # 3️⃣ Extract OpenAPI Spec
+      # -------------------------------
+      - name: Extract OpenAPI Spec
+        run: |
+          ./ci/scripts/extract_openapi.sh
+
+      # -------------------------------
+      # 4️⃣ Upload Spec to ApiScan
+      # -------------------------------
+      - name: Upload Spec to ApiScan
+        env:
+          APISCAN_API_URL: ${{ secrets.APISCAN_API_URL }}
+          APISCAN_TOKEN: ${{ secrets.APISCAN_TOKEN }}
+          PROJECT_ID: ${{ secrets.APISCAN_PROJECT_ID }}
+        run: |
+          curl -X POST "$APISCAN_API_URL/api/specs/upload" \
+            -H "Authorization: Bearer $APISCAN_TOKEN" \
+            -F "project_id=$PROJECT_ID" \
+            -F "file=@openapi.json"
