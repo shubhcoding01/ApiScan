@@ -1,3 +1,9 @@
-pytest
-requests
-faker
+# pytest
+# requests
+# faker
+
+# HTTP client for making API requests
+requests==2.31.0
+
+# Test framework (future-ready, even if not used immediately)
+pytest==8.0.0
