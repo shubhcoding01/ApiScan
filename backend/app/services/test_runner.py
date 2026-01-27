@@ -99,7 +99,7 @@ def execute_test_run(db: Session, blueprint_id: str):
             db.add(result_record)
 
     # 5. Finish Run
-    run.status = "COMPLETED"
+    run.status = "PASSED" if failed == 0 else "FAILED"
     run.completed_at = datetime.utcnow()
     run.total_tests = total
     run.passed_tests = passed

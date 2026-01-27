@@ -71,7 +71,7 @@ def execute_test_run(db: Session, test_run_id):
                 error_message=str(e)
             ))
 
-    test_run.status = "COMPLETED"
+    test_run.status = "PASSED" if failed == 0 else "FAILED"
     test_run.finished_at = datetime.utcnow()
     test_run.reliability_score = int((passed / max(1, passed + failed)) * 100)
 

@@ -90,6 +90,6 @@ def execute_test_run(self, payload: dict):
     )
 
     return {
-        "test_run_id": test_run_id,
-        "status": "COMPLETED",
-    }
+    "test_run_id": test_run_id,
+    "status": "PASSED" if parsed_results["failed"] == 0 else "FAILED",
+}
