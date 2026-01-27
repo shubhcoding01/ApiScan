@@ -9,9 +9,8 @@ Responsibilities:
 
 import os
 import requests
-from datetime import datetime
 
-from celery_app import celery_app
+from worker.app.celery_app import celery_app
 from worker.app.runner.result_parser import ResultParser
 
 BACKEND_API = os.getenv("BACKEND_API_URL", "http://localhost:8000/api")
@@ -27,9 +26,18 @@ BACKEND_API = os.getenv("BACKEND_API_URL", "http://localhost:8000/api")
 def execute_test_run(self, payload: dict):
     """
     payload = {
-        "test_run_id": "...",
-        "base_url": "...",
-        "test_cases": [...]
+        "test_run_id": "uuid",
+        "base_url": "https://api.example.com",
+        "test_cases": [
+            {
+                "id": "TC-001",
+                "name": "Get Users",
+                "method": "GET",
+                "endpoint": "/users",
+                "headers": {},
+                "body": null
+            }
+        ]
     }
     """
 
@@ -71,13 +79,13 @@ def execute_test_run(self, payload: dict):
                 "error_message": str(e),
             })
 
-    # Parse results
-    parsed = ResultParser.parse(raw_results)
+    # Parse results (metrics, counts, summary)
+    parsed_results = ResultParser.parse(raw_results)
 
     # Send results back to backend
     requests.post(
         f"{BACKEND_API}/test-runs/{test_run_id}/complete",
-        json=parsed,
+        json=parsed_results,
         timeout=10,
     )
 
