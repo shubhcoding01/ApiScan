@@ -1,0 +1,176 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ApiScan Backend",
+    "description": "Self-testing specification for the ApiScan platform.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          }
+        }
+      }
+    },
+    "/api/projects/": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List Projects",
+        "operationId": "list_projects",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ProjectResponse" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create Project",
+        "operationId": "create_project",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ProjectCreate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProjectResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["username", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successful Login" }
+        }
+      }
+    },
+    "/api/test-runs/{test_run_id}": {
+      "get": {
+        "tags": ["Test Runs"],
+        "summary": "Get Test Run",
+        "security": [{ "OAuth2PasswordBearer": [] }],
+        "parameters": [
+          { "name": "test_run_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/TestRunResponse" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/test-runs/{test_run_id}/complete": {
+      "post": {
+        "tags": ["Test Runs"],
+        "summary": "Complete Test Run",
+        "description": "Worker callback to save results.",
+        "parameters": [
+          { "name": "test_run_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+            "content": { "application/json": { "schema": { "type": "object" } } }
+        },
+        "responses": {
+          "200": { "description": "Results Saved" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProjectCreate": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "base_url": { "type": "string" }
+        },
+        "required": ["name", "base_url"]
+      },
+      "ProjectResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "base_url": { "type": "string" }
+        }
+      },
+      "TestResultSchema": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "method": { "type": "string" },
+          "endpoint": { "type": "string" },
+          "status_code": { "type": "integer" },
+          "result": { "type": "string" }
+        }
+      },
+      "TestRunResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "type": "string" },
+          "passed_tests": { "type": "integer" },
+          "failed_tests": { "type": "integer" },
+          "results": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/TestResultSchema" }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": { "password": { "tokenUrl": "/api/auth/login", "scopes": {} } }
+      }
+    }
+  }
+}

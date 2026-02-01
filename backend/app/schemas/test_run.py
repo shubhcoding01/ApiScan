@@ -1,3 +1,5 @@
+# # backend/app/schemas/test_run.py
+
 # from datetime import datetime
 # from uuid import UUID
 # from typing import Any, Dict, List
@@ -6,57 +8,40 @@
 
 
 # # -----------------------------
-# # Request Schemas
+# # REQUEST SCHEMAS
 # # -----------------------------
 
 # class TestRunCreate(BaseModel):
 #     """
 #     Schema used to trigger a new test run.
-#     Usually called from CI/CD or dashboard.
 #     """
-#     test_blueprint_id: UUID
+#     test_blueprint_id: UUID = Field(..., description="Approved blueprint ID")
 #     environment: str = Field(..., example="STAGING")
 
 
 # # -----------------------------
-# # Response Schemas
+# # RESPONSE SCHEMAS
 # # -----------------------------
 
 # class TestRunResponse(BaseModel):
-#     """
-#     Schema returned when fetching test run details.
-#     """
 #     id: UUID
-#     test_blueprint_id: UUID
-#     status: str = Field(..., example="PASSED")
-#     reliability_score: int | None = Field(
-#         default=None,
-#         ge=0,
-#         le=100,
-#         example=92
-#     )
-#     context: Dict[str, Any] | None = Field(
-#         default=None,
-#         example={"user_id": 55}
-#     )
+#     blueprint_id: UUID
+#     status: str = Field(..., example="RUNNING")
+#     reliability_score: int | None = None
 #     created_at: datetime
+#     started_at: datetime | None = None
+#     finished_at: datetime | None = None
 
 #     class Config:
 #         from_attributes = True
 
 
 # class TestRunListResponse(BaseModel):
-#     """
-#     Schema for listing multiple test runs.
-#     """
 #     items: List[TestRunResponse]
-
-
-# backend/app/schemas/test_run.py
 
 from datetime import datetime
 from uuid import UUID
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -66,11 +51,30 @@ from pydantic import BaseModel, Field
 # -----------------------------
 
 class TestRunCreate(BaseModel):
-    """
-    Schema used to trigger a new test run.
-    """
     test_blueprint_id: UUID = Field(..., description="Approved blueprint ID")
     environment: str = Field(..., example="STAGING")
+
+
+# -----------------------------
+# ✅ FIXED SCHEMA
+# -----------------------------
+
+class TestResultSchema(BaseModel):
+    """
+    Represents a single test case log.
+    """
+    id: UUID                    # 👈 FIX: Changed from 'int' to 'UUID'
+    test_case_id: Optional[str] = None
+    name: str
+    method: str
+    endpoint: str
+    status_code: int
+    result: str
+    response_body: Optional[str] = None
+    error_message: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 # -----------------------------
@@ -81,10 +85,17 @@ class TestRunResponse(BaseModel):
     id: UUID
     blueprint_id: UUID
     status: str = Field(..., example="RUNNING")
+    
     reliability_score: int | None = None
+    passed_tests: int | None = 0
+    failed_tests: int | None = 0
+    total_tests: int | None = 0
+
     created_at: datetime
     started_at: datetime | None = None
-    finished_at: datetime | None = None
+    finished_at: datetime | None = None 
+
+    results: List[TestResultSchema] = []
 
     class Config:
         from_attributes = True

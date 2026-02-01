@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import List
 
-from celery import Celery
+# from celery import Celery
+from app.celery_client import celery_app
+
 
 from app.models.test_run import TestRun
 
@@ -91,6 +93,47 @@ def generate_blueprint_endpoint(
 #     except Exception as e:
 #         print(f"❌ Run Error: {e}")
 #         raise HTTPException(status_code=500, detail=str(e))
+
+
+# @router.post("/{blueprint_id}/run")
+# def run_tests_endpoint(
+#     blueprint_id: UUID,
+#     db: Session = Depends(get_db),
+#     user=Depends(get_current_user)
+# ):
+#     blueprint = db.query(TestBlueprint).filter(
+#         TestBlueprint.id == blueprint_id
+#     ).first()
+
+#     if not blueprint:
+#         raise HTTPException(status_code=404, detail="Blueprint not found")
+
+#     # 1️⃣ Create TestRun
+#     test_run = TestRun(
+#         blueprint_id=blueprint.id,
+#         status="PENDING"
+#     )
+#     db.add(test_run)
+#     db.commit()
+#     db.refresh(test_run)
+
+#     # 2️⃣ Send async task to WORKER
+#     celery_app.send_task(
+#         "tasks.execute_test_run",
+#         args=[{
+#             "test_run_id": str(test_run.id),
+#             "base_url": blueprint.api_version.project.base_url,
+#             "test_cases": blueprint.ai_strategy_json["test_cases"]
+#         }]
+#     )
+
+#     # 3️⃣ Return immediately
+#     return {
+#         "test_run_id": str(test_run.id),
+#         "status": "PENDING"
+#     }
+
+
 @router.post("/{blueprint_id}/run")
 def run_tests_endpoint(
     blueprint_id: UUID,
@@ -104,7 +147,7 @@ def run_tests_endpoint(
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")
 
-    # 1️⃣ Create TestRun
+    # 1. Create TestRun (PENDING)
     test_run = TestRun(
         blueprint_id=blueprint.id,
         status="PENDING"
@@ -113,17 +156,17 @@ def run_tests_endpoint(
     db.commit()
     db.refresh(test_run)
 
-    # 2️⃣ Send task to WORKER via Redis
+    # 2. Dispatch to Worker 🚀
+    # FIX: We send the ENTIRE strategy JSON, not just "test_cases"
     celery_app.send_task(
         "tasks.execute_test_run",
         args=[{
             "test_run_id": str(test_run.id),
-            "base_url": blueprint.api_version.base_url,
-            "test_cases": blueprint.ai_strategy_json["test_cases"]
+            "base_url": blueprint.api_version.project.base_url,
+            "strategy": blueprint.ai_strategy_json # <--- Sending the whole blob
         }]
     )
 
-    # 3️⃣ Return immediately
     return {
         "test_run_id": str(test_run.id),
         "status": "PENDING"
