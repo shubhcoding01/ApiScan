@@ -536,8 +536,6 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
-
 export default function ProjectOverviewPage() {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -683,11 +681,12 @@ export default function ProjectOverviewPage() {
 
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-          <PageHeader
-            title={project.name}
-            description={project.description || 'Manage API specifications, secrets, and automated tests.'}
-            className="mb-0 border-none pb-0"
-          />
+          <div className="mb-0 border-none pb-0">
+            <PageHeader
+              title={project.name}
+              description={project.description || 'Manage API specifications, secrets, and automated tests.'}
+            />
+          </div>
           
           <div className="flex gap-3">
             <Link href={`/projects/${projectId}/specs`}>
@@ -843,25 +842,25 @@ export default function ProjectOverviewPage() {
 function ProjectSkeleton() {
     return (
         <div className="min-h-screen bg-black text-white p-8">
-            <div className="max-w-7xl mx-auto space-y-8">
+            <div className="max-w-7xl mx-auto space-y-8 animate-pulse">
                 <div className="flex justify-between">
                     <div className="space-y-2">
-                        <Skeleton className="h-8 w-64 bg-zinc-800" />
-                        <Skeleton className="h-4 w-96 bg-zinc-900" />
+                        <div className="h-8 w-64 bg-zinc-800 rounded" />
+                        <div className="h-4 w-96 bg-zinc-900 rounded" />
                     </div>
                     <div className="flex gap-2">
-                        <Skeleton className="h-10 w-32 bg-zinc-800" />
-                        <Skeleton className="h-10 w-32 bg-zinc-800" />
+                        <div className="h-10 w-32 bg-zinc-800 rounded" />
+                        <div className="h-10 w-32 bg-zinc-800 rounded" />
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-6">
-                    <Skeleton className="h-32 bg-zinc-900 rounded-xl" />
-                    <Skeleton className="h-32 bg-zinc-900 rounded-xl" />
-                    <Skeleton className="h-32 bg-zinc-900 rounded-xl" />
+                    <div className="h-32 bg-zinc-900 rounded-xl" />
+                    <div className="h-32 bg-zinc-900 rounded-xl" />
+                    <div className="h-32 bg-zinc-900 rounded-xl" />
                 </div>
                 <div className="grid grid-cols-3 gap-8">
-                    <Skeleton className="col-span-2 h-96 bg-zinc-900 rounded-xl" />
-                    <Skeleton className="h-96 bg-zinc-900 rounded-xl" />
+                    <div className="col-span-2 h-96 bg-zinc-900 rounded-xl" />
+                    <div className="h-96 bg-zinc-900 rounded-xl" />
                 </div>
             </div>
         </div>
