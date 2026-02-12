@@ -133,6 +133,7 @@ export interface TestBlueprint {
 // 5. TEST RUNS
 // ---------------------------------------------------------
 export interface TestRun {
+  finished_at: string | undefined;
   id: string;
   blueprint_id: string;
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'PASSED';
