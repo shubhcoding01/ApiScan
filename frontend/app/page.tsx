@@ -240,146 +240,110 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import { 
   ArrowRight, 
   Shield, 
   Zap, 
   Bot, 
-  FileJson, 
+  Activity,
   Terminal,
   CheckCircle2,
-  Code2,
   Lock,
-  Activity,
-  Sparkles,
-  Search,
-  AlertTriangle,
+  Layers,
   Play,
   Github,
   Twitter,
   Linkedin,
-  Layers,
-  Orbit,
-  Cpu
+  Radio,
+  Network,
+  ScanLine,
+  Radar,
+  Binary,
+  Bug,
+  AlertTriangle,
+  Server,
+  Globe
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.8]);
-
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [scanningNodes, setScanningNodes] = useState<number[]>([]);
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
+  
+  const springConfig = { damping: 25, stiffness: 150 };
+  const cursorXSpring = useSpring(cursorX, springConfig);
+  const cursorYSpring = useSpring(cursorY, springConfig);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
+    const moveCursor = (e: MouseEvent) => {
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+
+    window.addEventListener('mousemove', moveCursor);
+    return () => window.removeEventListener('mousemove', moveCursor);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setScanningNodes(prev => {
+        const newNodes = [...prev, Math.floor(Math.random() * 6)];
+        return newNodes.slice(-3);
+      });
+    }, 1500);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#020817] text-white selection:bg-cyan-500/30 overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#0a0e1a] text-white overflow-x-hidden relative">
       
-      {/* Animated Grid Background */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:80px_80px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black,transparent)]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 via-transparent to-blue-500/5" />
-      </div>
-
-      {/* Floating Orbs */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <motion.div 
-          className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[150px]"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-            x: [0, 50, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div 
-          className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[120px]"
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.4, 0.2],
-            x: [0, -30, 0],
-            y: [0, 50, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div 
-          className="absolute bottom-20 left-1/3 w-[350px] h-[350px] bg-purple-500/15 rounded-full blur-[100px]"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.25, 0.35, 0.25],
-            x: [0, 40, 0],
-            y: [0, -40, 0],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
-
-      {/* Cursor Follower Glow */}
+      {/* Cursor Follower with Scan Glow */}
       <motion.div
-        className="fixed w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-10"
-        animate={{
-          x: mousePosition.x - 192,
-          y: mousePosition.y - 192,
-        }}
-        transition={{
-          type: "spring",
-          damping: 30,
-          stiffness: 200,
+        className="fixed w-64 h-64 rounded-full pointer-events-none z-50 mix-blend-screen"
+        style={{
+          background: 'radial-gradient(circle, rgba(0,255,65,0.15), transparent 70%)',
+          left: cursorXSpring,
+          top: cursorYSpring,
+          translateX: '-50%',
+          translateY: '-50%',
         }}
       />
 
-      {/* NAVBAR */}
+      {/* NAVBAR with Scan Line */}
       <motion.nav 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#020817]/80 backdrop-blur-2xl"
+        className="fixed top-0 w-full z-50 border-b border-[#1e293b] bg-[#0a0e1a]/95 backdrop-blur-xl"
       >
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#00ff41] to-transparent opacity-50" />
+        
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
           <Link href="/" className="flex items-center gap-3 group">
             <motion.div 
               className="relative w-11 h-11"
-              whileHover={{ rotate: 180 }}
-              transition={{ duration: 0.6 }}
+              whileHover={{ scale: 1.1 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-2xl opacity-80 blur-sm" />
-              <div className="relative w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-900/50">
-                <Bot className="w-6 h-6 text-white" />
+              <div className="absolute inset-0 bg-[#00ff41] rounded-lg opacity-20 blur-md group-hover:opacity-40 transition-opacity" />
+              <div className="relative w-full h-full bg-gradient-to-br from-[#00ff41] to-[#00d9ff] rounded-lg flex items-center justify-center border border-[#00ff41]/30">
+                <Radar className="w-6 h-6 text-[#0a0e1a]" />
               </div>
             </motion.div>
-            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-cyan-100 to-blue-100 bg-clip-text text-transparent">
-              ApiScan
-            </span>
+            <div className="flex flex-col">
+              <span className="text-2xl font-black tracking-tighter text-[#00ff41]">
+                APISCAN
+              </span>
+              <span className="text-[9px] font-mono text-[#64748b] tracking-widest uppercase">
+                Network Security
+              </span>
+            </div>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
-            {['Features', 'How It Works', 'Documentation', 'Pricing'].map((item, i) => (
+            {['Features', 'Scan Types', 'Documentation', 'Pricing'].map((item, i) => (
               <motion.div
                 key={item}
                 initial={{ opacity: 0, y: -20 }}
@@ -388,10 +352,10 @@ export default function LandingPage() {
               >
                 <Link 
                   href={`#${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-sm font-semibold text-slate-400 hover:text-white transition-colors relative group"
+                  className="text-sm font-bold text-[#64748b] hover:text-[#00ff41] transition-colors relative group font-mono uppercase tracking-wider"
                 >
                   {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 group-hover:w-full transition-all duration-300" />
+                  <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-[#00ff41] group-hover:w-full transition-all duration-300" />
                 </Link>
               </motion.div>
             ))}
@@ -399,18 +363,15 @@ export default function LandingPage() {
 
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-white/5 font-semibold">
-                Sign In
+              <Button variant="ghost" size="sm" className="text-[#64748b] hover:text-[#00ff41] hover:bg-[#00ff41]/5 font-mono font-bold uppercase tracking-wider">
+                Login
               </Button>
             </Link>
             <Link href="/login">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="sm" className="relative bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 text-white shadow-lg shadow-cyan-900/50 font-semibold overflow-hidden group">
-                  <span className="relative z-10 flex items-center">
-                    Get Started Free
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity" />
+                <Button size="sm" className="btn-scan">
+                  Start Scan
+                  <Radio className="ml-2 w-4 h-4" />
                 </Button>
               </motion.div>
             </Link>
@@ -419,24 +380,42 @@ export default function LandingPage() {
         </div>
       </motion.nav>
 
-      {/* HERO SECTION */}
-      <section ref={heroRef} className="relative pt-32 pb-32 px-6 overflow-hidden">
-        <motion.div style={{ opacity, scale }} className="max-w-6xl mx-auto text-center relative z-10 space-y-10">
+      {/* HERO SECTION with Radar */}
+      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
+        
+        {/* Radar Background */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-20">
+          <div className="radar-container w-full h-full">
+            <div className="radar-sweep" />
+            <div className="radar-rings" />
+          </div>
+        </div>
+
+        {/* Packet Traces */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="packet-trace"
+              style={{
+                top: `${20 + i * 15}%`,
+                animationDelay: `${i * 0.4}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="max-w-6xl mx-auto text-center relative z-10 space-y-10">
           
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass-card border border-cyan-500/20 text-sm font-semibold text-slate-200"
+            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass-panel border border-[#00ff41]/20"
           >
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-            >
-              <Sparkles className="w-4 h-4 text-cyan-400" />
-            </motion.div>
-            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              AI-Powered API Testing Platform
+            <div className="status-indicator scanning" />
+            <span className="text-[#00ff41] font-mono font-bold text-sm uppercase tracking-widest">
+              Real-Time API Security Scanner
             </span>
           </motion.div>
           
@@ -444,14 +423,14 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-6xl md:text-8xl lg:text-[120px] font-black tracking-tighter leading-[0.9]"
+            className="text-6xl md:text-8xl lg:text-[110px] font-black tracking-tighter leading-[0.9]"
           >
-            <span className="inline-block bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
-              Autonomous
+            <span className="inline-block text-white">
+              AUTONOMOUS
             </span>
             <br />
-            <span className="inline-block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
-              API Security
+            <span className="inline-block text-[#00ff41]">
+              API SCANNING
             </span>
           </motion.h1>
           
@@ -459,9 +438,9 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed font-light"
+            className="text-xl md:text-2xl text-[#64748b] max-w-3xl mx-auto leading-relaxed font-mono"
           >
-            Upload your OpenAPI spec and let our <span className="text-cyan-400 font-semibold">intelligent agents</span> generate comprehensive test scenarios, execute them automatically, and uncover <span className="text-purple-400 font-semibold">critical vulnerabilities</span> you didn't know existed.
+            Deep network analysis. Real-time vulnerability detection. Upload your OpenAPI spec and watch our <span className="text-[#00d9ff] font-bold">scanning agents</span> probe every endpoint for <span className="text-[#ff1744] font-bold">critical security flaws</span>.
           </motion.p>
           
           <motion.div 
@@ -472,24 +451,17 @@ export default function LandingPage() {
           >
             <Link href="/login">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="lg" className="h-16 px-12 text-lg font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-2xl shadow-cyan-900/50 hover:shadow-cyan-900/70 transition-all group relative overflow-hidden">
-                  <span className="relative z-10 flex items-center">
-                    Start Testing Free
-                    <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                  </span>
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                  />
+                <Button size="lg" className="h-16 px-12 text-lg btn-scan">
+                  <ScanLine className="mr-3 w-5 h-5" />
+                  Initialize Scan
                 </Button>
               </motion.div>
             </Link>
             <Link href="#how-it-works">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold border-slate-700/50 glass-card hover:bg-white/5 hover:border-cyan-500/30 group">
-                  <Play className="mr-3 w-5 h-5 group-hover:scale-125 transition-transform" />
-                  See How It Works
+                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold glass-panel border-[#334155] hover:bg-[#00ff41]/5 hover:border-[#00ff41]/30 font-mono uppercase">
+                  <Play className="mr-3 w-5 h-5" />
+                  View Demo
                 </Button>
               </motion.div>
             </Link>
@@ -499,12 +471,12 @@ export default function LandingPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="flex flex-wrap items-center justify-center gap-8 pt-12 text-sm text-slate-500"
+            className="flex flex-wrap items-center justify-center gap-8 pt-12 font-mono text-sm text-[#64748b]"
           >
             {[
-              { icon: CheckCircle2, text: "No credit card required" },
-              { icon: CheckCircle2, text: "Free tier available" },
-              { icon: CheckCircle2, text: "5-minute setup" }
+              { icon: CheckCircle2, text: "No credit card", color: "#00ff41" },
+              { icon: CheckCircle2, text: "Free tier", color: "#00d9ff" },
+              { icon: CheckCircle2, text: "Deploy in 60s", color: "#b388ff" }
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -513,44 +485,30 @@ export default function LandingPage() {
                 transition={{ delay: 1.2 + i * 0.1 }}
                 className="flex items-center gap-2"
               >
-                <item.icon className="w-4 h-4 text-emerald-500" />
-                <span className="text-slate-400 font-medium">{item.text}</span>
+                <item.icon className="w-4 h-4" style={{ color: item.color }} />
+                <span className="font-bold uppercase tracking-wide">{item.text}</span>
               </motion.div>
             ))}
           </motion.div>
 
-          {/* Floating Icons */}
-          <div className="absolute inset-0 pointer-events-none">
-            {[
-              { Icon: Shield, left: '10%', top: '20%', delay: 0 },
-              { Icon: Zap, right: '15%', top: '30%', delay: 2 },
-              { Icon: Lock, left: '15%', bottom: '25%', delay: 4 },
-              { Icon: Cpu, right: '10%', bottom: '20%', delay: 1 },
-            ].map((item, i) => (
+          {/* Scanning Nodes Visualization */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+            className="flex items-center justify-center gap-4 pt-8"
+          >
+            {[...Array(6)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute"
-                style={{ left: item.left, right: item.right, top: item.top, bottom: item.bottom }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ 
-                  opacity: [0.1, 0.3, 0.1],
-                  scale: [1, 1.2, 1],
-                  y: [0, -20, 0]
+                className={`hex-node ${scanningNodes.includes(i) ? 'active' : ''}`}
+                style={{
+                  background: scanningNodes.includes(i) ? '#00ff41' : '#334155',
                 }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  delay: item.delay,
-                  ease: "easeInOut"
-                }}
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/5">
-                  <item.Icon className="w-8 h-8 text-cyan-400/60" />
-                </div>
-              </motion.div>
+              />
             ))}
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
       </section>
 
       {/* FEATURES SECTION */}
@@ -563,20 +521,23 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-24 space-y-6"
           >
-            <div className="inline-block px-5 py-2 rounded-full glass-card border border-cyan-500/20 text-cyan-400 text-sm font-bold uppercase tracking-wider">
-              Core Features
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-panel border border-[#00d9ff]/20">
+              <Network className="w-4 h-4 text-[#00d9ff]" />
+              <span className="text-[#00d9ff] text-sm font-bold uppercase tracking-widest font-mono">
+                Scan Capabilities
+              </span>
             </div>
             <h2 className="text-5xl md:text-6xl font-black tracking-tight">
-              <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                Everything You Need for
+              <span className="text-white">
+                COMPREHENSIVE
               </span>
               <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                Bulletproof API Testing
+              <span className="text-[#00ff41]">
+                THREAT DETECTION
               </span>
             </h2>
-            <p className="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
-              Comprehensive security and logic testing powered by advanced AI analysis
+            <p className="text-[#64748b] text-xl max-w-2xl mx-auto leading-relaxed font-mono">
+              Multi-layer security analysis powered by autonomous scanning agents
             </p>
           </motion.div>
 
@@ -584,58 +545,46 @@ export default function LandingPage() {
             
             {[
               {
-                icon: FileJson,
-                title: "Smart Spec Parsing",
-                description: "Instant analysis of OpenAPI 2.0 and 3.0 specifications. Automatically extracts endpoints, parameters, schemas, and authentication patterns in seconds.",
-                gradient: "from-cyan-500/20 to-blue-500/20",
-                iconColor: "text-cyan-400",
-                borderColor: "hover:border-cyan-500/30",
-                shadowColor: "hover:shadow-cyan-900/20"
+                icon: Binary,
+                title: "SPEC PARSER",
+                description: "Instant OpenAPI 2.0/3.0 analysis. Extracts endpoints, parameters, schemas, and auth patterns in milliseconds with zero configuration.",
+                color: "#00ff41",
+                delay: 0
               },
               {
                 icon: Bot,
-                title: "AI Test Generation",
-                description: "Advanced AI agents analyze your API logic to create intelligent test scenarios, covering edge cases and attack vectors traditional scanners miss.",
-                gradient: "from-blue-500/20 to-purple-500/20",
-                iconColor: "text-blue-400",
-                borderColor: "hover:border-blue-500/30",
-                shadowColor: "hover:shadow-blue-900/20"
+                title: "AI AGENTS",
+                description: "Autonomous testing agents generate intelligent attack vectors, covering edge cases and vulnerabilities traditional scanners can't detect.",
+                color: "#00d9ff",
+                delay: 0.1
               },
               {
                 icon: Zap,
-                title: "Real-Time Execution",
-                description: "Run comprehensive test suites against your staging or production environment. Watch live execution logs with instant pass/fail feedback.",
-                gradient: "from-emerald-500/20 to-green-500/20",
-                iconColor: "text-emerald-400",
-                borderColor: "hover:border-emerald-500/30",
-                shadowColor: "hover:shadow-emerald-900/20"
+                title: "LIVE EXECUTION",
+                description: "Real-time test suite deployment against staging or production. Monitor live logs with instant pass/fail feedback and packet analysis.",
+                color: "#00ff41",
+                delay: 0.2
               },
               {
-                icon: AlertTriangle,
-                title: "Vulnerability Detection",
-                description: "Automatically detect SQL injection, XSS, authentication flaws, broken access control, and OWASP API Top 10 vulnerabilities with detailed remediation steps.",
-                gradient: "from-red-500/20 to-orange-500/20",
-                iconColor: "text-red-400",
-                borderColor: "hover:border-red-500/30",
-                shadowColor: "hover:shadow-red-900/20"
+                icon: Bug,
+                title: "VULN DETECTION",
+                description: "Automatic detection of SQL injection, XSS, broken authentication, IDOR, and complete OWASP API Top 10 coverage with exploit PoC.",
+                color: "#ff1744",
+                delay: 0.3
               },
               {
                 icon: Lock,
-                title: "Secure Secrets Management",
-                description: "Store API keys, tokens, and environment variables with enterprise-grade encryption. Never expose credentials in test configurations.",
-                gradient: "from-purple-500/20 to-pink-500/20",
-                iconColor: "text-purple-400",
-                borderColor: "hover:border-purple-500/30",
-                shadowColor: "hover:shadow-purple-900/20"
+                title: "SECRETS VAULT",
+                description: "Military-grade encryption for API keys, OAuth tokens, and environment variables. Zero-knowledge architecture with HSM integration.",
+                color: "#b388ff",
+                delay: 0.4
               },
               {
                 icon: Activity,
-                title: "Detailed Reporting",
-                description: "Generate comprehensive test reports with vulnerability severity, affected endpoints, reproduction steps, and compliance mappings (OWASP, PCI-DSS).",
-                gradient: "from-amber-500/20 to-yellow-500/20",
-                iconColor: "text-amber-400",
-                borderColor: "hover:border-amber-500/30",
-                shadowColor: "hover:shadow-amber-900/20"
+                title: "INTEL REPORTS",
+                description: "Generate comprehensive threat intelligence reports with CVE mappings, severity scores, remediation steps, and compliance tracking.",
+                color: "#ffa000",
+                delay: 0.5
               },
             ].map((feature, i) => (
               <motion.div
@@ -643,24 +592,31 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -8 }}
-                className={`group p-8 rounded-3xl glass-card ${feature.borderColor} transition-all duration-500 ${feature.shadowColor} shadow-2xl relative overflow-hidden`}
+                transition={{ delay: feature.delay }}
+                className="group glass-panel p-8 relative overflow-hidden motion-trail"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="scan-wave" style={{ animationDelay: `${i * 0.5}s` }} />
                 
                 <motion.div 
-                  className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 relative z-10`}
+                  className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 relative z-10 border"
+                  style={{
+                    background: `rgba(${feature.color === '#00ff41' ? '0,255,65' : feature.color === '#00d9ff' ? '0,217,255' : feature.color === '#ff1744' ? '255,23,68' : feature.color === '#b388ff' ? '179,136,255' : '255,160,0'},0.1)`,
+                    borderColor: feature.color,
+                    boxShadow: `0 0 20px ${feature.color}40`,
+                  }}
                   whileHover={{ rotate: 360, scale: 1.1 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <feature.icon className={`w-8 h-8 ${feature.iconColor}`} />
+                  <feature.icon className="w-8 h-8" style={{ color: feature.color }} />
                 </motion.div>
                 
-                <h3 className="text-2xl font-bold mb-4 text-white relative z-10">{feature.title}</h3>
-                <p className="text-slate-400 leading-relaxed relative z-10">{feature.description}</p>
+                <h3 className="text-xl font-black mb-4 text-white font-mono uppercase tracking-wider relative z-10">{feature.title}</h3>
+                <p className="text-[#64748b] leading-relaxed relative z-10 font-mono text-sm">{feature.description}</p>
                 
-                <div className={`absolute -bottom-10 -right-10 w-40 h-40 bg-gradient-to-br ${feature.gradient} rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
+                <div 
+                  className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                  style={{ background: feature.color }}
+                />
               </motion.div>
             ))}
 
@@ -668,8 +624,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="py-32 px-6 relative z-20">
+      {/* HOW IT WORKS with Terminal */}
+      <section id="scan-types" className="py-32 px-6 relative z-20">
         <div className="max-w-6xl mx-auto">
           
           <motion.div 
@@ -678,56 +634,51 @@ export default function LandingPage() {
             viewport={{ once: true }}
             className="text-center mb-24 space-y-6"
           >
-            <div className="inline-block px-5 py-2 rounded-full glass-card border border-blue-500/20 text-blue-400 text-sm font-bold uppercase tracking-wider">
-              Simple Workflow
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-panel border border-[#00ff41]/20">
+              <Terminal className="w-4 h-4 text-[#00ff41]" />
+              <span className="text-[#00ff41] text-sm font-bold uppercase tracking-widest font-mono">
+                Scan Protocol
+              </span>
             </div>
             <h2 className="text-5xl md:text-6xl font-black tracking-tight">
-              <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-                From Upload to
+              <span className="text-white">
+                FROM UPLOAD TO
               </span>
               <br />
-              <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                Insights in Minutes
+              <span className="text-[#00d9ff]">
+                THREAT INTEL
               </span>
             </h2>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             
-            <div className="space-y-8">
+            <div className="space-y-6">
               
               {[
                 {
-                  number: "1",
-                  title: "Upload Your Spec",
-                  description: "Drag and drop your OpenAPI/Swagger JSON or YAML file. Alternatively, let our AI generate the spec from your API description.",
-                  gradient: "from-cyan-500/20 to-blue-500/20",
-                  borderColor: "border-cyan-500/30",
-                  textColor: "text-cyan-400"
+                  number: "01",
+                  title: "UPLOAD SPEC",
+                  description: "Deploy OpenAPI/Swagger file via CLI, API, or drag-drop interface. Auto-detection and parsing in <100ms.",
+                  color: "#00ff41"
                 },
                 {
-                  number: "2",
-                  title: "Configure Environment",
-                  description: "Add your API base URL and securely store authentication credentials (API keys, OAuth tokens) using encrypted secrets management.",
-                  gradient: "from-blue-500/20 to-purple-500/20",
-                  borderColor: "border-blue-500/30",
-                  textColor: "text-blue-400"
+                  number: "02",
+                  title: "CONFIGURE ENV",
+                  description: "Define target base URL. Store credentials in encrypted vault. Configure rate limits and request headers.",
+                  color: "#00d9ff"
                 },
                 {
-                  number: "3",
-                  title: "AI Strategy Review",
-                  description: "Review the AI-generated test strategy covering security checks, business logic validation, and edge cases. Customize as needed.",
-                  gradient: "from-purple-500/20 to-pink-500/20",
-                  borderColor: "border-purple-500/30",
-                  textColor: "text-purple-400"
+                  number: "03",
+                  title: "AI STRATEGY",
+                  description: "Review autonomous agent-generated test vectors covering security, logic, and performance attack surfaces.",
+                  color: "#b388ff"
                 },
                 {
-                  number: "4",
-                  title: "Execute & Monitor",
-                  description: "Launch the test suite and watch real-time execution in the console. Get instant alerts on vulnerabilities, failures, and performance issues.",
-                  gradient: "from-emerald-500/20 to-green-500/20",
-                  borderColor: "border-emerald-500/30",
-                  textColor: "text-emerald-400"
+                  number: "04",
+                  title: "EXECUTE SCAN",
+                  description: "Deploy scan agents. Monitor real-time packet analysis. Receive instant vulnerability alerts with severity scores.",
+                  color: "#ffa000"
                 },
               ].map((step, i) => (
                 <motion.div
@@ -736,18 +687,25 @@ export default function LandingPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.15 }}
-                  className="flex gap-6 group"
+                  className="api-card group"
                 >
-                  <motion.div 
-                    className={`flex-none w-14 h-14 rounded-2xl bg-gradient-to-br ${step.gradient} border ${step.borderColor} flex items-center justify-center font-black text-2xl ${step.textColor} shadow-lg`}
-                    whileHover={{ scale: 1.15, rotate: 360 }}
-                    transition={{ duration: 0.6 }}
-                  >
-                    {step.number}
-                  </motion.div>
-                  <div className="space-y-2">
-                    <h4 className="font-bold text-2xl text-white">{step.title}</h4>
-                    <p className="text-slate-400 leading-relaxed text-lg">{step.description}</p>
+                  <div className="flex gap-6">
+                    <motion.div 
+                      className="flex-none w-14 h-14 rounded-lg border flex items-center justify-center font-black text-xl font-mono"
+                      style={{
+                        borderColor: step.color,
+                        color: step.color,
+                        background: `rgba(${step.color === '#00ff41' ? '0,255,65' : step.color === '#00d9ff' ? '0,217,255' : step.color === '#b388ff' ? '179,136,255' : '255,160,0'},0.1)`,
+                      }}
+                      whileHover={{ scale: 1.15, rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      {step.number}
+                    </motion.div>
+                    <div className="space-y-2">
+                      <h4 className="font-black text-xl text-white font-mono uppercase tracking-wider">{step.title}</h4>
+                      <p className="text-[#64748b] leading-relaxed font-mono text-sm">{step.description}</p>
+                    </div>
                   </div>
                 </motion.div>
               ))}
@@ -760,27 +718,25 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/30 to-blue-600/30 blur-[100px] rounded-3xl animate-pulse-glow" />
-              
-              <div className="relative glass-card rounded-3xl border border-slate-800/50 shadow-2xl overflow-hidden">
-                <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-800/50 bg-slate-950/50">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="text-xs text-slate-500 ml-3 font-mono font-semibold">test-execution.log</span>
+              <div className="terminal">
+                <div className="terminal-header">
+                  <div className="terminal-dot" />
+                  <div className="terminal-dot" />
+                  <div className="terminal-dot active" />
+                  <span className="text-xs text-[#64748b] ml-3 font-mono font-bold uppercase">scan-execution.log</span>
                 </div>
 
-                <div className="p-8 space-y-3 font-mono text-sm bg-gradient-to-b from-slate-900/50 to-slate-950">
+                <div className="terminal-content">
                   {[
-                    { time: "14:32:01", type: "INFO", color: "text-cyan-400", message: "Parsing OpenAPI specification..." },
-                    { time: "14:32:03", type: "INFO", color: "text-cyan-400", message: "Found 47 endpoints across 8 resources" },
-                    { time: "14:32:05", type: "AI", color: "text-blue-400", message: "Generating test vectors..." },
-                    { time: "14:32:08", type: "AI", color: "text-blue-400", message: "Created 284 test scenarios" },
-                    { time: "14:32:10", type: "PASS", color: "text-emerald-400", message: "GET /api/v1/users → 200 OK" },
-                    { time: "14:32:12", type: "PASS", color: "text-emerald-400", message: "POST /api/v1/auth/login → Token Valid" },
-                    { time: "14:32:15", type: "FAIL", color: "text-red-400", message: "SQL Injection detected: /api/v1/search" },
-                    { time: "14:32:17", type: "WARN", color: "text-amber-400", message: "Broken auth: /api/v1/admin/users" },
-                    { time: "14:32:20", type: "INFO", color: "text-cyan-400", message: "Tests complete: 282/284 passed (2 critical)" },
+                    { time: "14:32:01", type: "SCAN", color: "#b388ff", message: "Initializing OpenAPI parser..." },
+                    { time: "14:32:03", type: "SCAN", color: "#b388ff", message: "Discovered 47 endpoints | 8 resources" },
+                    { time: "14:32:05", type: "AI", color: "#00d9ff", message: "Generating attack vectors..." },
+                    { time: "14:32:08", type: "AI", color: "#00d9ff", message: "Created 284 test scenarios" },
+                    { time: "14:32:10", type: "OK", color: "#00ff41", message: "GET /api/v1/users → 200 [PASS]" },
+                    { time: "14:32:12", type: "OK", color: "#00ff41", message: "POST /auth/login → Token valid [PASS]" },
+                    { time: "14:32:15", type: "VULN", color: "#ff1744", message: "SQLi detected: /api/v1/search [CRITICAL]" },
+                    { time: "14:32:17", type: "WARN", color: "#ffa000", message: "Broken auth: /admin/users [HIGH]" },
+                    { time: "14:32:20", type: "SCAN", color: "#b388ff", message: "Scan complete | 282/284 passed | 2 critical" },
                   ].map((log, i) => (
                     <motion.div
                       key={i}
@@ -788,13 +744,22 @@ export default function LandingPage() {
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ delay: i * 0.1 }}
-                      className="flex gap-4 items-start"
+                      className="terminal-line"
                     >
-                      <span className="text-slate-600 flex-none">[{log.time}]</span>
-                      <span className={`${log.color} font-bold flex-none min-w-[50px]`}>{log.type}</span>
-                      <span className="text-slate-300">{log.message}</span>
+                      <span className="terminal-timestamp">[{log.time}]</span>
+                      <span className="terminal-type font-black uppercase" style={{ color: log.color }}>
+                        {log.type}
+                      </span>
+                      <span className="text-[#e2e8f0]">{log.message}</span>
                     </motion.div>
                   ))}
+                </div>
+
+                {/* Sonar Pulses */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                  <div className="sonar-pulse" />
+                  <div className="sonar-pulse" />
+                  <div className="sonar-pulse" />
                 </div>
               </div>
             </motion.div>
@@ -805,7 +770,11 @@ export default function LandingPage() {
 
       {/* CTA SECTION */}
       <section className="py-32 px-6 relative z-20">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/10 via-blue-600/15 to-purple-600/10 blur-[150px]" />
+        <div className="absolute inset-0 opacity-30">
+          <div className="radar-container w-full h-full">
+            <div className="radar-sweep" />
+          </div>
+        </div>
         
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
@@ -814,39 +783,37 @@ export default function LandingPage() {
           className="max-w-4xl mx-auto text-center relative z-10 space-y-10"
         >
           <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
-            <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
-              Ready to Secure
+            <span className="text-white">
+              READY TO
             </span>
             <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
-              Your API?
+            <span className="text-[#00ff41]">
+              SCAN YOUR API?
             </span>
           </h2>
           
-          <p className="text-2xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Join developers who trust <span className="text-white font-bold">ApiScan</span> to protect their APIs from vulnerabilities and ensure bulletproof quality.
+          <p className="text-2xl text-[#64748b] max-w-2xl mx-auto leading-relaxed font-mono">
+            Deploy <span className="text-[#00ff41] font-bold">APISCAN</span> and detect vulnerabilities before attackers do. Real-time threat intelligence in 60 seconds.
           </p>
+
+          <div className="scan-progress max-w-md mx-auto">
+            <div className="scan-progress-bar" style={{ width: '100%' }} />
+          </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
             <Link href="/login">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="lg" className="h-16 px-12 text-lg font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-2xl shadow-cyan-900/50 group relative overflow-hidden">
-                  <span className="relative z-10 flex items-center">
-                    Start Free Trial
-                    <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                  </span>
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                  />
+                <Button size="lg" className="h-16 px-12 text-lg btn-scan">
+                  <Radar className="mr-3 w-5 h-5" />
+                  Deploy Scanner
                 </Button>
               </motion.div>
             </Link>
             <Link href="/docs">
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold glass-card border-slate-700/50 hover:bg-white/5 hover:border-cyan-500/30">
-                  View Documentation
+                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold glass-panel border-[#334155] hover:bg-[#00ff41]/5 hover:border-[#00ff41]/30 font-mono uppercase">
+                  <Server className="mr-3 w-5 h-5" />
+                  Documentation
                 </Button>
               </motion.div>
             </Link>
@@ -855,42 +822,47 @@ export default function LandingPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="py-20 border-t border-slate-900/50 glass-card relative z-20">
+      <footer className="py-20 border-t border-[#1e293b] glass-panel relative z-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-16">
             
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Bot className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 bg-gradient-to-br from-[#00ff41] to-[#00d9ff] rounded-lg flex items-center justify-center border border-[#00ff41]/30">
+                  <Radar className="w-5 h-5 text-[#0a0e1a]" />
                 </div>
-                <span className="text-2xl font-black">ApiScan</span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-black text-[#00ff41]">APISCAN</span>
+                  <span className="text-[8px] font-mono text-[#64748b] tracking-widest uppercase">
+                    Security Platform
+                  </span>
+                </div>
               </div>
-              <p className="text-slate-500 text-sm leading-relaxed">
-                Intelligent API testing platform powered by advanced AI agents.
+              <p className="text-[#64748b] text-sm leading-relaxed font-mono">
+                Autonomous API security scanning powered by AI threat intelligence.
               </p>
             </div>
 
             {[
               {
-                title: "Product",
-                links: ["Features", "Pricing", "Documentation", "Changelog"]
+                title: "PLATFORM",
+                links: ["Features", "Pricing", "Documentation", "API"]
               },
               {
-                title: "Company",
-                links: ["About Us", "Blog", "Careers", "Contact"]
+                title: "COMPANY",
+                links: ["About", "Blog", "Careers", "Contact"]
               },
               {
-                title: "Legal",
-                links: ["Privacy Policy", "Terms of Service", "Security", "Compliance"]
+                title: "LEGAL",
+                links: ["Privacy", "Terms", "Security", "Compliance"]
               }
             ].map((section, i) => (
               <div key={i}>
-                <h4 className="font-bold text-white mb-5 text-lg">{section.title}</h4>
-                <ul className="space-y-3 text-sm text-slate-400">
+                <h4 className="font-black text-white mb-5 text-sm font-mono uppercase tracking-widest">{section.title}</h4>
+                <ul className="space-y-3 text-sm text-[#64748b] font-mono">
                   {section.links.map((link, j) => (
                     <li key={j}>
-                      <Link href={`/${link.toLowerCase().replace(' ', '-')}`} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                      <Link href={`/${link.toLowerCase()}`} className="hover:text-[#00ff41] transition-colors uppercase tracking-wide">
                         {link}
                       </Link>
                     </li>
@@ -900,9 +872,9 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="pt-10 border-t border-slate-900/50 flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-slate-500 text-sm font-medium">
-              © 2026 ApiScan Inc. All rights reserved.
+          <div className="pt-10 border-t border-[#1e293b] flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-[#64748b] text-sm font-mono font-bold uppercase tracking-wide">
+              © 2026 APISCAN · All Rights Reserved
             </p>
             <div className="flex items-center gap-6">
               {[
@@ -913,7 +885,7 @@ export default function LandingPage() {
                 <Link key={i} href={social.href}>
                   <motion.div
                     whileHover={{ scale: 1.2, rotate: 5 }}
-                    className="text-slate-500 hover:text-white transition-colors"
+                    className="text-[#64748b] hover:text-[#00ff41] transition-colors"
                   >
                     <social.Icon className="w-5 h-5" />
                   </motion.div>
