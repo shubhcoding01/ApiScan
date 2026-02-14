@@ -236,9 +236,12 @@
 //   );
 // }
 
+'use client';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 import { 
   ArrowRight, 
   Shield, 
@@ -256,489 +259,666 @@ import {
   Play,
   Github,
   Twitter,
-  Linkedin
+  Linkedin,
+  Layers,
+  Orbit,
+  Cpu
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.8]);
+
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white selection:bg-cyan-500/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#020817] text-white selection:bg-cyan-500/30 overflow-x-hidden relative">
       
-      {/* 1. NAVBAR */}
-      <nav className="border-b border-white/5 bg-slate-950/80 backdrop-blur-xl fixed top-0 w-full z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      {/* Animated Grid Background */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:80px_80px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,black,transparent)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 via-transparent to-blue-500/5" />
+      </div>
+
+      {/* Floating Orbs */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div 
+          className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[150px]"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[120px]"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.4, 0.2],
+            x: [0, -30, 0],
+            y: [0, 50, 0],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-20 left-1/3 w-[350px] h-[350px] bg-purple-500/15 rounded-full blur-[100px]"
+          animate={{
+            scale: [1, 1.1, 1],
+            opacity: [0.25, 0.35, 0.25],
+            x: [0, 40, 0],
+            y: [0, -40, 0],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
+      {/* Cursor Follower Glow */}
+      <motion.div
+        className="fixed w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none z-10"
+        animate={{
+          x: mousePosition.x - 192,
+          y: mousePosition.y - 192,
+        }}
+        transition={{
+          type: "spring",
+          damping: 30,
+          stiffness: 200,
+        }}
+      />
+
+      {/* NAVBAR */}
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#020817]/80 backdrop-blur-2xl"
+      >
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-cyan-900/30 group-hover:shadow-cyan-900/50 transition-all">
-              <Bot className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+            <motion.div 
+              className="relative w-11 h-11"
+              whileHover={{ rotate: 180 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-2xl opacity-80 blur-sm" />
+              <div className="relative w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-900/50">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+            </motion.div>
+            <span className="text-2xl font-black tracking-tight bg-gradient-to-r from-white via-cyan-100 to-blue-100 bg-clip-text text-transparent">
               ApiScan
             </span>
           </Link>
 
-          {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
-            <Link 
-              href="#features" 
-              className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
-            >
-              Features
-            </Link>
-            <Link 
-              href="#how-it-works" 
-              className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
-            >
-              How It Works
-            </Link>
-            <Link 
-              href="/docs" 
-              className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
-            >
-              Documentation
-            </Link>
-            <Link 
-              href="/pricing" 
-              className="text-sm font-medium text-slate-400 hover:text-white transition-colors"
-            >
-              Pricing
-            </Link>
+            {['Features', 'How It Works', 'Documentation', 'Pricing'].map((item, i) => (
+              <motion.div
+                key={item}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Link 
+                  href={`#${item.toLowerCase().replace(' ', '-')}`}
+                  className="text-sm font-semibold text-slate-400 hover:text-white transition-colors relative group"
+                >
+                  {item}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 group-hover:w-full transition-all duration-300" />
+                </Link>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Auth Buttons */}
           <div className="flex items-center gap-3">
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white hover:bg-slate-800/50">
+              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-white/5 font-semibold">
                 Sign In
               </Button>
             </Link>
             <Link href="/login">
-              <Button size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-900/30 font-medium">
-                Get Started Free
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button size="sm" className="relative bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 text-white shadow-lg shadow-cyan-900/50 font-semibold overflow-hidden group">
+                  <span className="relative z-10 flex items-center">
+                    Get Started Free
+                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-20 transition-opacity" />
+                </Button>
+              </motion.div>
             </Link>
           </div>
           
         </div>
-      </nav>
+      </motion.nav>
 
-      {/* 2. HERO SECTION */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-600/20 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '4s' }} />
-          <div className="absolute top-20 right-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '6s' }} />
-          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '5s' }} />
-        </div>
-
-        {/* Grid Pattern Overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_80%)]" />
-
-        <div className="max-w-6xl mx-auto text-center relative z-10 space-y-8">
+      {/* HERO SECTION */}
+      <section ref={heroRef} className="relative pt-32 pb-32 px-6 overflow-hidden">
+        <motion.div style={{ opacity, scale }} className="max-w-6xl mx-auto text-center relative z-10 space-y-10">
           
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/50 border border-slate-800/50 backdrop-blur-sm text-sm font-medium text-slate-300 animate-in fade-in slide-in-from-bottom-3 duration-700">
-            <Sparkles className="w-4 h-4 text-cyan-400" />
-            <span>AI-Powered API Testing Platform</span>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass-card border border-cyan-500/20 text-sm font-semibold text-slate-200"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            >
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+            </motion.div>
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              AI-Powered API Testing Platform
+            </span>
+          </motion.div>
           
-          {/* Main Headline */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <span className="bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-              Autonomous API
+          <motion.h1 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-6xl md:text-8xl lg:text-[120px] font-black tracking-tighter leading-[0.9]"
+          >
+            <span className="inline-block bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+              Autonomous
             </span>
             <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-              Quality Assurance
+            <span className="inline-block bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
+              API Security
             </span>
-          </h1>
+          </motion.h1>
           
-          {/* Subtitle */}
-          <p className="text-lg md:text-xl lg:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed font-light animate-in fade-in slide-in-from-bottom-5 duration-1000 delay-200">
-            Upload your OpenAPI specification and let our intelligent agents generate comprehensive test scenarios, execute them automatically, and uncover vulnerabilities you didn't know existed.
-          </p>
+          <motion.p 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl md:text-2xl text-slate-400 max-w-3xl mx-auto leading-relaxed font-light"
+          >
+            Upload your OpenAPI spec and let our <span className="text-cyan-400 font-semibold">intelligent agents</span> generate comprehensive test scenarios, execute them automatically, and uncover <span className="text-purple-400 font-semibold">critical vulnerabilities</span> you didn't know existed.
+          </motion.p>
           
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-300">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6"
+          >
             <Link href="/login">
-              <Button size="lg" className="h-14 px-10 text-base font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-2xl shadow-cyan-900/40 hover:shadow-cyan-900/60 transition-all group">
-                Start Testing Free
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button size="lg" className="h-16 px-12 text-lg font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-2xl shadow-cyan-900/50 hover:shadow-cyan-900/70 transition-all group relative overflow-hidden">
+                  <span className="relative z-10 flex items-center">
+                    Start Testing Free
+                    <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                  </span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                </Button>
+              </motion.div>
             </Link>
             <Link href="#how-it-works">
-              <Button variant="outline" size="lg" className="h-14 px-10 text-base font-semibold border-slate-700 hover:bg-slate-800/50 backdrop-blur-sm hover:border-slate-600 group">
-                <Play className="mr-2 w-5 h-5 group-hover:scale-110 transition-transform" />
-                See How It Works
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold border-slate-700/50 glass-card hover:bg-white/5 hover:border-cyan-500/30 group">
+                  <Play className="mr-3 w-5 h-5 group-hover:scale-125 transition-transform" />
+                  See How It Works
+                </Button>
+              </motion.div>
             </Link>
-          </div>
+          </motion.div>
 
-          {/* Trust Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-8 pt-12 text-sm text-slate-500 animate-in fade-in duration-1000 delay-500">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>Free tier available</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>5-minute setup</span>
-            </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="flex flex-wrap items-center justify-center gap-8 pt-12 text-sm text-slate-500"
+          >
+            {[
+              { icon: CheckCircle2, text: "No credit card required" },
+              { icon: CheckCircle2, text: "Free tier available" },
+              { icon: CheckCircle2, text: "5-minute setup" }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.2 + i * 0.1 }}
+                className="flex items-center gap-2"
+              >
+                <item.icon className="w-4 h-4 text-emerald-500" />
+                <span className="text-slate-400 font-medium">{item.text}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Floating Icons */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[
+              { Icon: Shield, left: '10%', top: '20%', delay: 0 },
+              { Icon: Zap, right: '15%', top: '30%', delay: 2 },
+              { Icon: Lock, left: '15%', bottom: '25%', delay: 4 },
+              { Icon: Cpu, right: '10%', bottom: '20%', delay: 1 },
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                className="absolute"
+                style={{ left: item.left, right: item.right, top: item.top, bottom: item.bottom }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: [0.1, 0.3, 0.1],
+                  scale: [1, 1.2, 1],
+                  y: [0, -20, 0]
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  delay: item.delay,
+                  ease: "easeInOut"
+                }}
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/5">
+                  <item.Icon className="w-8 h-8 text-cyan-400/60" />
+                </div>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* 3. FEATURES SECTION */}
-      <section id="features" className="py-32 bg-slate-950/50 border-y border-slate-900/50 relative">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* FEATURES SECTION */}
+      <section id="features" className="py-32 px-6 relative z-20">
+        <div className="max-w-7xl mx-auto">
           
-          {/* Section Header */}
-          <div className="text-center mb-20 space-y-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-sm font-semibold uppercase tracking-wider">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-24 space-y-6"
+          >
+            <div className="inline-block px-5 py-2 rounded-full glass-card border border-cyan-500/20 text-cyan-400 text-sm font-bold uppercase tracking-wider">
               Core Features
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                 Everything You Need for
               </span>
               <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
                 Bulletproof API Testing
               </span>
             </h2>
-            <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            <p className="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
               Comprehensive security and logic testing powered by advanced AI analysis
             </p>
-          </div>
+          </motion.div>
 
-          {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* Feature 1 */}
-            <div className="group p-8 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-slate-800/50 hover:border-cyan-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-900/10 backdrop-blur-sm">
-              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <FileJson className="w-7 h-7 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Smart Spec Parsing</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Instant analysis of OpenAPI 2.0 and 3.0 specifications. Automatically extracts endpoints, parameters, schemas, and authentication patterns in seconds.
-              </p>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="group p-8 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-slate-800/50 hover:border-blue-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/10 backdrop-blur-sm">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Bot className="w-7 h-7 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">AI Test Generation</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Advanced AI agents analyze your API logic to create intelligent test scenarios, covering edge cases and attack vectors traditional scanners miss.
-              </p>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="group p-8 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-slate-800/50 hover:border-emerald-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-900/10 backdrop-blur-sm">
-              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500/20 to-green-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Zap className="w-7 h-7 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Real-Time Execution</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Run comprehensive test suites against your staging or production environment. Watch live execution logs with instant pass/fail feedback.
-              </p>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="group p-8 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-slate-800/50 hover:border-red-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-red-900/10 backdrop-blur-sm">
-              <div className="w-14 h-14 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <AlertTriangle className="w-7 h-7 text-red-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Vulnerability Detection</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Automatically detect SQL injection, XSS, authentication flaws, broken access control, and OWASP API Top 10 vulnerabilities with detailed remediation steps.
-              </p>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="group p-8 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-slate-800/50 hover:border-purple-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-purple-900/10 backdrop-blur-sm">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Lock className="w-7 h-7 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Secure Secrets Management</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Store API keys, tokens, and environment variables with enterprise-grade encryption. Never expose credentials in test configurations.
-              </p>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="group p-8 rounded-2xl bg-gradient-to-br from-slate-900/80 to-slate-900/40 border border-slate-800/50 hover:border-amber-500/30 transition-all duration-300 hover:shadow-xl hover:shadow-amber-900/10 backdrop-blur-sm">
-              <div className="w-14 h-14 bg-gradient-to-br from-amber-500/20 to-yellow-500/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <Activity className="w-7 h-7 text-amber-400" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 text-white">Detailed Reporting</h3>
-              <p className="text-slate-400 leading-relaxed">
-                Generate comprehensive test reports with vulnerability severity, affected endpoints, reproduction steps, and compliance mappings (OWASP, PCI-DSS).
-              </p>
-            </div>
+            {[
+              {
+                icon: FileJson,
+                title: "Smart Spec Parsing",
+                description: "Instant analysis of OpenAPI 2.0 and 3.0 specifications. Automatically extracts endpoints, parameters, schemas, and authentication patterns in seconds.",
+                gradient: "from-cyan-500/20 to-blue-500/20",
+                iconColor: "text-cyan-400",
+                borderColor: "hover:border-cyan-500/30",
+                shadowColor: "hover:shadow-cyan-900/20"
+              },
+              {
+                icon: Bot,
+                title: "AI Test Generation",
+                description: "Advanced AI agents analyze your API logic to create intelligent test scenarios, covering edge cases and attack vectors traditional scanners miss.",
+                gradient: "from-blue-500/20 to-purple-500/20",
+                iconColor: "text-blue-400",
+                borderColor: "hover:border-blue-500/30",
+                shadowColor: "hover:shadow-blue-900/20"
+              },
+              {
+                icon: Zap,
+                title: "Real-Time Execution",
+                description: "Run comprehensive test suites against your staging or production environment. Watch live execution logs with instant pass/fail feedback.",
+                gradient: "from-emerald-500/20 to-green-500/20",
+                iconColor: "text-emerald-400",
+                borderColor: "hover:border-emerald-500/30",
+                shadowColor: "hover:shadow-emerald-900/20"
+              },
+              {
+                icon: AlertTriangle,
+                title: "Vulnerability Detection",
+                description: "Automatically detect SQL injection, XSS, authentication flaws, broken access control, and OWASP API Top 10 vulnerabilities with detailed remediation steps.",
+                gradient: "from-red-500/20 to-orange-500/20",
+                iconColor: "text-red-400",
+                borderColor: "hover:border-red-500/30",
+                shadowColor: "hover:shadow-red-900/20"
+              },
+              {
+                icon: Lock,
+                title: "Secure Secrets Management",
+                description: "Store API keys, tokens, and environment variables with enterprise-grade encryption. Never expose credentials in test configurations.",
+                gradient: "from-purple-500/20 to-pink-500/20",
+                iconColor: "text-purple-400",
+                borderColor: "hover:border-purple-500/30",
+                shadowColor: "hover:shadow-purple-900/20"
+              },
+              {
+                icon: Activity,
+                title: "Detailed Reporting",
+                description: "Generate comprehensive test reports with vulnerability severity, affected endpoints, reproduction steps, and compliance mappings (OWASP, PCI-DSS).",
+                gradient: "from-amber-500/20 to-yellow-500/20",
+                iconColor: "text-amber-400",
+                borderColor: "hover:border-amber-500/30",
+                shadowColor: "hover:shadow-amber-900/20"
+              },
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -8 }}
+                className={`group p-8 rounded-3xl glass-card ${feature.borderColor} transition-all duration-500 ${feature.shadowColor} shadow-2xl relative overflow-hidden`}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
+                <motion.div 
+                  className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-2xl flex items-center justify-center mb-6 relative z-10`}
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <feature.icon className={`w-8 h-8 ${feature.iconColor}`} />
+                </motion.div>
+                
+                <h3 className="text-2xl font-bold mb-4 text-white relative z-10">{feature.title}</h3>
+                <p className="text-slate-400 leading-relaxed relative z-10">{feature.description}</p>
+                
+                <div className={`absolute -bottom-10 -right-10 w-40 h-40 bg-gradient-to-br ${feature.gradient} rounded-full blur-3xl opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
+              </motion.div>
+            ))}
 
           </div>
         </div>
       </section>
 
-      {/* 4. HOW IT WORKS */}
-      <section id="how-it-works" className="py-32 px-6 relative overflow-hidden">
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" className="py-32 px-6 relative z-20">
         <div className="max-w-6xl mx-auto">
           
-          {/* Section Header */}
-          <div className="text-center mb-20 space-y-4">
-            <div className="inline-block px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold uppercase tracking-wider">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-24 space-y-6"
+          >
+            <div className="inline-block px-5 py-2 rounded-full glass-card border border-blue-500/20 text-blue-400 text-sm font-bold uppercase tracking-wider">
               Simple Workflow
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
+              <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
                 From Upload to
               </span>
               <br />
-              <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
                 Insights in Minutes
               </span>
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             
-            {/* Left: Steps */}
             <div className="space-y-8">
               
-              {/* Step 1 */}
-              <div className="flex gap-6 group">
-                <div className="flex-none w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center font-bold text-xl text-cyan-400 group-hover:scale-110 transition-transform">
-                  1
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-xl text-white">Upload Your Spec</h4>
-                  <p className="text-slate-400 leading-relaxed">
-                    Drag and drop your OpenAPI/Swagger JSON or YAML file. Alternatively, let our AI generate the spec from your API description.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex gap-6 group">
-                <div className="flex-none w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-blue-500/30 flex items-center justify-center font-bold text-xl text-blue-400 group-hover:scale-110 transition-transform">
-                  2
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-xl text-white">Configure Environment</h4>
-                  <p className="text-slate-400 leading-relaxed">
-                    Add your API base URL and securely store authentication credentials (API keys, OAuth tokens) using encrypted secrets management.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex gap-6 group">
-                <div className="flex-none w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center font-bold text-xl text-purple-400 group-hover:scale-110 transition-transform">
-                  3
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-xl text-white">AI Strategy Review</h4>
-                  <p className="text-slate-400 leading-relaxed">
-                    Review the AI-generated test strategy covering security checks, business logic validation, and edge cases. Customize as needed.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 4 */}
-              <div className="flex gap-6 group">
-                <div className="flex-none w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 border border-emerald-500/30 flex items-center justify-center font-bold text-xl text-emerald-400 group-hover:scale-110 transition-transform">
-                  4
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-xl text-white">Execute & Monitor</h4>
-                  <p className="text-slate-400 leading-relaxed">
-                    Launch the test suite and watch real-time execution in the console. Get instant alerts on vulnerabilities, failures, and performance issues.
-                  </p>
-                </div>
-              </div>
+              {[
+                {
+                  number: "1",
+                  title: "Upload Your Spec",
+                  description: "Drag and drop your OpenAPI/Swagger JSON or YAML file. Alternatively, let our AI generate the spec from your API description.",
+                  gradient: "from-cyan-500/20 to-blue-500/20",
+                  borderColor: "border-cyan-500/30",
+                  textColor: "text-cyan-400"
+                },
+                {
+                  number: "2",
+                  title: "Configure Environment",
+                  description: "Add your API base URL and securely store authentication credentials (API keys, OAuth tokens) using encrypted secrets management.",
+                  gradient: "from-blue-500/20 to-purple-500/20",
+                  borderColor: "border-blue-500/30",
+                  textColor: "text-blue-400"
+                },
+                {
+                  number: "3",
+                  title: "AI Strategy Review",
+                  description: "Review the AI-generated test strategy covering security checks, business logic validation, and edge cases. Customize as needed.",
+                  gradient: "from-purple-500/20 to-pink-500/20",
+                  borderColor: "border-purple-500/30",
+                  textColor: "text-purple-400"
+                },
+                {
+                  number: "4",
+                  title: "Execute & Monitor",
+                  description: "Launch the test suite and watch real-time execution in the console. Get instant alerts on vulnerabilities, failures, and performance issues.",
+                  gradient: "from-emerald-500/20 to-green-500/20",
+                  borderColor: "border-emerald-500/30",
+                  textColor: "text-emerald-400"
+                },
+              ].map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15 }}
+                  className="flex gap-6 group"
+                >
+                  <motion.div 
+                    className={`flex-none w-14 h-14 rounded-2xl bg-gradient-to-br ${step.gradient} border ${step.borderColor} flex items-center justify-center font-black text-2xl ${step.textColor} shadow-lg`}
+                    whileHover={{ scale: 1.15, rotate: 360 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    {step.number}
+                  </motion.div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-2xl text-white">{step.title}</h4>
+                    <p className="text-slate-400 leading-relaxed text-lg">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
 
             </div>
 
-            {/* Right: Terminal Visual */}
-            <div className="relative">
-              {/* Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 blur-3xl rounded-3xl" />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/30 to-blue-600/30 blur-[100px] rounded-3xl animate-pulse-glow" />
               
-              <div className="relative bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl shadow-slate-950/50 overflow-hidden">
-                {/* Terminal Header */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-800 bg-slate-950/50">
+              <div className="relative glass-card rounded-3xl border border-slate-800/50 shadow-2xl overflow-hidden">
+                <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-800/50 bg-slate-950/50">
                   <div className="w-3 h-3 rounded-full bg-red-500" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
-                  <span className="text-xs text-slate-500 ml-2 font-mono">test-execution.log</span>
+                  <span className="text-xs text-slate-500 ml-3 font-mono font-semibold">test-execution.log</span>
                 </div>
 
-                {/* Terminal Content */}
-                <div className="p-6 space-y-2 font-mono text-sm bg-gradient-to-b from-slate-900 to-slate-950">
-                  <div className="flex gap-3 animate-in fade-in duration-500">
-                    <span className="text-slate-600">[14:32:01]</span>
-                    <span className="text-cyan-400">INFO</span>
-                    <span className="text-slate-300">Parsing OpenAPI specification...</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-100">
-                    <span className="text-slate-600">[14:32:03]</span>
-                    <span className="text-cyan-400">INFO</span>
-                    <span className="text-slate-300">Found 47 endpoints across 8 resources</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-200">
-                    <span className="text-slate-600">[14:32:05]</span>
-                    <span className="text-blue-400">AI</span>
-                    <span className="text-slate-300">Generating test vectors...</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-300">
-                    <span className="text-slate-600">[14:32:08]</span>
-                    <span className="text-blue-400">AI</span>
-                    <span className="text-slate-300">Created 284 test scenarios</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-400">
-                    <span className="text-slate-600">[14:32:10]</span>
-                    <span className="text-emerald-400">PASS</span>
-                    <span className="text-slate-300">GET /api/v1/users → 200 OK</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-500">
-                    <span className="text-slate-600">[14:32:12]</span>
-                    <span className="text-emerald-400">PASS</span>
-                    <span className="text-slate-300">POST /api/v1/auth/login → Token Valid</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-600">
-                    <span className="text-slate-600">[14:32:15]</span>
-                    <span className="text-red-400">FAIL</span>
-                    <span className="text-slate-300">SQL Injection detected: /api/v1/search</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-700">
-                    <span className="text-slate-600">[14:32:17]</span>
-                    <span className="text-amber-400">WARN</span>
-                    <span className="text-slate-300">Broken auth: /api/v1/admin/users</span>
-                  </div>
-                  <div className="flex gap-3 animate-in fade-in duration-500 delay-800">
-                    <span className="text-slate-600">[14:32:20]</span>
-                    <span className="text-cyan-400">INFO</span>
-                    <span className="text-slate-300">Tests complete: 282/284 passed (2 critical)</span>
-                  </div>
+                <div className="p-8 space-y-3 font-mono text-sm bg-gradient-to-b from-slate-900/50 to-slate-950">
+                  {[
+                    { time: "14:32:01", type: "INFO", color: "text-cyan-400", message: "Parsing OpenAPI specification..." },
+                    { time: "14:32:03", type: "INFO", color: "text-cyan-400", message: "Found 47 endpoints across 8 resources" },
+                    { time: "14:32:05", type: "AI", color: "text-blue-400", message: "Generating test vectors..." },
+                    { time: "14:32:08", type: "AI", color: "text-blue-400", message: "Created 284 test scenarios" },
+                    { time: "14:32:10", type: "PASS", color: "text-emerald-400", message: "GET /api/v1/users → 200 OK" },
+                    { time: "14:32:12", type: "PASS", color: "text-emerald-400", message: "POST /api/v1/auth/login → Token Valid" },
+                    { time: "14:32:15", type: "FAIL", color: "text-red-400", message: "SQL Injection detected: /api/v1/search" },
+                    { time: "14:32:17", type: "WARN", color: "text-amber-400", message: "Broken auth: /api/v1/admin/users" },
+                    { time: "14:32:20", type: "INFO", color: "text-cyan-400", message: "Tests complete: 282/284 passed (2 critical)" },
+                  ].map((log, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex gap-4 items-start"
+                    >
+                      <span className="text-slate-600 flex-none">[{log.time}]</span>
+                      <span className={`${log.color} font-bold flex-none min-w-[50px]`}>{log.type}</span>
+                      <span className="text-slate-300">{log.message}</span>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </div>
       </section>
 
-      {/* 5. CTA SECTION */}
-      <section className="py-32 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/10 via-blue-600/10 to-purple-600/10 blur-3xl" />
+      {/* CTA SECTION */}
+      <section className="py-32 px-6 relative z-20">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-600/10 via-blue-600/15 to-purple-600/10 blur-[150px]" />
         
-        <div className="max-w-4xl mx-auto text-center relative z-10 space-y-8">
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto text-center relative z-10 space-y-10"
+        >
+          <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
+            <span className="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
               Ready to Secure
             </span>
             <br />
-            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent animate-gradient">
               Your API?
             </span>
           </h2>
           
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-            Join developers who trust ApiScan to protect their APIs from vulnerabilities and ensure bulletproof quality.
+          <p className="text-2xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Join developers who trust <span className="text-white font-bold">ApiScan</span> to protect their APIs from vulnerabilities and ensure bulletproof quality.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
             <Link href="/login">
-              <Button size="lg" className="h-14 px-10 text-base font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 shadow-2xl shadow-cyan-900/40 group">
-                Start Free Trial
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button size="lg" className="h-16 px-12 text-lg font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 hover:from-cyan-500 hover:via-blue-500 hover:to-purple-500 shadow-2xl shadow-cyan-900/50 group relative overflow-hidden">
+                  <span className="relative z-10 flex items-center">
+                    Start Free Trial
+                    <ArrowRight className="ml-3 w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                  </span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                </Button>
+              </motion.div>
             </Link>
             <Link href="/docs">
-              <Button variant="outline" size="lg" className="h-14 px-10 text-base font-semibold border-slate-700 hover:bg-slate-800/50 backdrop-blur-sm">
-                View Documentation
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold glass-card border-slate-700/50 hover:bg-white/5 hover:border-cyan-500/30">
+                  View Documentation
+                </Button>
+              </motion.div>
             </Link>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* 6. FOOTER */}
-      <footer className="py-16 border-t border-slate-900/50 bg-slate-950/50">
+      {/* FOOTER */}
+      <footer className="py-20 border-t border-slate-900/50 glass-card relative z-20">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-16">
             
-            {/* Brand */}
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-9 h-9 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <Bot className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold">ApiScan</span>
+                <span className="text-2xl font-black">ApiScan</span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed">
                 Intelligent API testing platform powered by advanced AI agents.
               </p>
             </div>
 
-            {/* Product */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Product</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li><Link href="#features" className="hover:text-white transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link href="/docs" className="hover:text-white transition-colors">Documentation</Link></li>
-                <li><Link href="/changelog" className="hover:text-white transition-colors">Changelog</Link></li>
-              </ul>
-            </div>
-
-            {/* Company */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Company</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-                <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-                <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold text-white mb-4">Legal</h4>
-              <ul className="space-y-3 text-sm text-slate-400">
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
-                <li><Link href="/compliance" className="hover:text-white transition-colors">Compliance</Link></li>
-              </ul>
-            </div>
+            {[
+              {
+                title: "Product",
+                links: ["Features", "Pricing", "Documentation", "Changelog"]
+              },
+              {
+                title: "Company",
+                links: ["About Us", "Blog", "Careers", "Contact"]
+              },
+              {
+                title: "Legal",
+                links: ["Privacy Policy", "Terms of Service", "Security", "Compliance"]
+              }
+            ].map((section, i) => (
+              <div key={i}>
+                <h4 className="font-bold text-white mb-5 text-lg">{section.title}</h4>
+                <ul className="space-y-3 text-sm text-slate-400">
+                  {section.links.map((link, j) => (
+                    <li key={j}>
+                      <Link href={`/${link.toLowerCase().replace(' ', '-')}`} className="hover:text-white transition-colors hover:translate-x-1 inline-block">
+                        {link}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
 
-          {/* Bottom Bar */}
-          <div className="pt-8 border-t border-slate-900/50 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm">
+          <div className="pt-10 border-t border-slate-900/50 flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-slate-500 text-sm font-medium">
               © 2026 ApiScan Inc. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
-              <Link href="https://github.com" className="text-slate-500 hover:text-white transition-colors">
-                <Github className="w-5 h-5" />
-              </Link>
-              <Link href="https://twitter.com" className="text-slate-500 hover:text-white transition-colors">
-                <Twitter className="w-5 h-5" />
-              </Link>
-              <Link href="https://linkedin.com" className="text-slate-500 hover:text-white transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </Link>
+              {[
+                { Icon: Github, href: "https://github.com" },
+                { Icon: Twitter, href: "https://twitter.com" },
+                { Icon: Linkedin, href: "https://linkedin.com" }
+              ].map((social, i) => (
+                <Link key={i} href={social.href}>
+                  <motion.div
+                    whileHover={{ scale: 1.2, rotate: 5 }}
+                    className="text-slate-500 hover:text-white transition-colors"
+                  >
+                    <social.Icon className="w-5 h-5" />
+                  </motion.div>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
