@@ -240,659 +240,352 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
-import { useRef, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { 
   ArrowRight, 
   Shield, 
   Zap, 
   Bot, 
-  Activity,
-  Terminal,
-  CheckCircle2,
-  Lock,
-  Layers,
-  Play,
-  Github,
-  Twitter,
-  Linkedin,
-  Radio,
-  Network,
-  ScanLine,
-  Radar,
-  Binary,
-  Bug,
-  AlertTriangle,
-  Server,
-  Globe
+  Terminal, 
+  CheckCircle2, 
+  Lock, 
+  Play, 
+  Github, 
+  Twitter, 
+  Linkedin, 
+  Radar, 
+  Server, 
+  ChevronRight,
+  Code2,
+  Workflow,
+  Search
 } from 'lucide-react';
 
 export default function LandingPage() {
-  const [scanningNodes, setScanningNodes] = useState<number[]>([]);
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
-  
-  const springConfig = { damping: 25, stiffness: 150 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
-
-  useEffect(() => {
-    const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-    };
-
-    window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setScanningNodes(prev => {
-        const newNodes = [...prev, Math.floor(Math.random() * 6)];
-        return newNodes.slice(-3);
-      });
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-[#0a0e1a] text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-blue-500/30 font-sans overflow-x-hidden">
       
-      {/* Cursor Follower with Scan Glow */}
-      <motion.div
-        className="fixed w-64 h-64 rounded-full pointer-events-none z-50 mix-blend-screen"
-        style={{
-          background: 'radial-gradient(circle, rgba(0,255,65,0.15), transparent 70%)',
-          left: cursorXSpring,
-          top: cursorYSpring,
-          translateX: '-50%',
-          translateY: '-50%',
-        }}
-      />
-
-      {/* NAVBAR with Scan Line */}
-      <motion.nav 
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className="fixed top-0 w-full z-50 border-b border-[#1e293b] bg-[#0a0e1a]/95 backdrop-blur-xl"
-      >
-        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-[#00ff41] to-transparent opacity-50" />
+      {/* --- BACKGROUND EFFECTS --- */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
         
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        {/* Top Spotlight */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-600/20 blur-[100px] rounded-full" />
+        <div className="absolute top-[-10%] left-1/3 w-[600px] h-[400px] bg-cyan-500/10 blur-[120px] rounded-full" />
+      </div>
+
+      {/* --- NAVBAR --- */}
+      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           
-          <Link href="/" className="flex items-center gap-3 group">
-            <motion.div 
-              className="relative w-11 h-11"
-              whileHover={{ scale: 1.1 }}
-            >
-              <div className="absolute inset-0 bg-[#00ff41] rounded-lg opacity-20 blur-md group-hover:opacity-40 transition-opacity" />
-              <div className="relative w-full h-full bg-gradient-to-br from-[#00ff41] to-[#00d9ff] rounded-lg flex items-center justify-center border border-[#00ff41]/30">
-                <Radar className="w-6 h-6 text-[#0a0e1a]" />
-              </div>
-            </motion.div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-black tracking-tighter text-[#00ff41]">
-                APISCAN
-              </span>
-              <span className="text-[9px] font-mono text-[#64748b] tracking-widest uppercase">
-                Network Security
-              </span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <Bot className="w-5 h-5" />
             </div>
+            <span className="text-lg font-bold tracking-tight text-white">
+              ApiScan
+            </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            {['Features', 'Scan Types', 'Documentation', 'Pricing'].map((item, i) => (
-              <motion.div
-                key={item}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
+            {['Features', 'How it Works', 'Pricing', 'Docs'].map((item) => (
+              <Link 
+                key={item} 
+                href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
+                className="hover:text-blue-400 transition-colors"
               >
-                <Link 
-                  href={`#${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-sm font-bold text-[#64748b] hover:text-[#00ff41] transition-colors relative group font-mono uppercase tracking-wider"
-                >
-                  {item}
-                  <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-[#00ff41] group-hover:w-full transition-all duration-300" />
-                </Link>
-              </motion.div>
+                {item}
+              </Link>
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+              Log in
+            </Link>
             <Link href="/login">
-              <Button variant="ghost" size="sm" className="text-[#64748b] hover:text-[#00ff41] hover:bg-[#00ff41]/5 font-mono font-bold uppercase tracking-wider">
-                Login
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white border-0 shadow-lg shadow-blue-900/20 rounded-full px-5">
+                Get Started
               </Button>
             </Link>
-            <Link href="/login">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="sm" className="btn-scan">
-                  Start Scan
-                  <Radio className="ml-2 w-4 h-4" />
-                </Button>
-              </motion.div>
-            </Link>
           </div>
           
         </div>
-      </motion.nav>
+      </nav>
 
-      {/* HERO SECTION with Radar */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
-        
-        {/* Radar Background */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] opacity-20">
-          <div className="radar-container w-full h-full">
-            <div className="radar-sweep" />
-            <div className="radar-rings" />
-          </div>
-        </div>
-
-        {/* Packet Traces */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={i}
-              className="packet-trace"
-              style={{
-                top: `${20 + i * 15}%`,
-                animationDelay: `${i * 0.4}s`,
-              }}
-            />
-          ))}
-        </div>
-
-        <div className="max-w-6xl mx-auto text-center relative z-10 space-y-10">
+      {/* --- HERO SECTION --- */}
+      <section className="relative z-10 pt-32 pb-20 px-6">
+        <div className="max-w-7xl mx-auto text-center space-y-8">
           
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
+          {/* Badge */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full glass-panel border border-[#00ff41]/20"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium"
           >
-            <div className="status-indicator scanning" />
-            <span className="text-[#00ff41] font-mono font-bold text-sm uppercase tracking-widest">
-              Real-Time API Security Scanner
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
             </span>
+            v1.0 Now Available
           </motion.div>
-          
+
+          {/* Headline */}
           <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-6xl md:text-8xl lg:text-[110px] font-black tracking-tighter leading-[0.9]"
+            transition={{ delay: 0.1 }}
+            className="text-5xl md:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.1]"
           >
-            <span className="inline-block text-white">
-              AUTONOMOUS
-            </span>
-            <br />
-            <span className="inline-block text-[#00ff41]">
-              API SCANNING
+            Automate your <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 animate-gradient">
+              API Security Testing
             </span>
           </motion.h1>
-          
+
+          {/* Subheadline */}
           <motion.p 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-xl md:text-2xl text-[#64748b] max-w-3xl mx-auto leading-relaxed font-mono"
+            transition={{ delay: 0.2 }}
+            className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed"
           >
-            Deep network analysis. Real-time vulnerability detection. Upload your OpenAPI spec and watch our <span className="text-[#00d9ff] font-bold">scanning agents</span> probe every endpoint for <span className="text-[#ff1744] font-bold">critical security flaws</span>.
+            Detect vulnerabilities, logic flaws, and broken auth in real-time. 
+            Upload your OpenAPI spec and let our autonomous agents do the rest.
           </motion.p>
-          
+
+          {/* CTAs */}
           <motion.div 
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6"
+            transition={{ delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
           >
             <Link href="/login">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="lg" className="h-16 px-12 text-lg btn-scan">
-                  <ScanLine className="mr-3 w-5 h-5" />
-                  Initialize Scan
-                </Button>
-              </motion.div>
+              <Button size="lg" className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-base shadow-xl shadow-blue-900/20">
+                Start Scanning Free
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </Button>
             </Link>
-            <Link href="#how-it-works">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold glass-panel border-[#334155] hover:bg-[#00ff41]/5 hover:border-[#00ff41]/30 font-mono uppercase">
-                  <Play className="mr-3 w-5 h-5" />
-                  View Demo
-                </Button>
-              </motion.div>
+            <Link href="#demo">
+              <Button variant="outline" size="lg" className="h-12 px-8 border-slate-700 hover:bg-slate-800 text-slate-300 rounded-full text-base">
+                <Play className="mr-2 w-4 h-4" />
+                View Demo
+              </Button>
             </Link>
           </motion.div>
 
+          {/* Mock Dashboard Preview */}
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="flex flex-wrap items-center justify-center gap-8 pt-12 font-mono text-sm text-[#64748b]"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="mt-16 relative mx-auto max-w-5xl rounded-xl border border-slate-800 bg-slate-900/50 shadow-2xl backdrop-blur-sm overflow-hidden"
           >
-            {[
-              { icon: CheckCircle2, text: "No credit card", color: "#00ff41" },
-              { icon: CheckCircle2, text: "Free tier", color: "#00d9ff" },
-              { icon: CheckCircle2, text: "Deploy in 60s", color: "#b388ff" }
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.2 + i * 0.1 }}
-                className="flex items-center gap-2"
-              >
-                <item.icon className="w-4 h-4" style={{ color: item.color }} />
-                <span className="font-bold uppercase tracking-wide">{item.text}</span>
-              </motion.div>
-            ))}
-          </motion.div>
+             {/* Window Controls */}
+             <div className="h-10 border-b border-slate-800 bg-slate-900/80 flex items-center px-4 gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
+                <div className="ml-4 px-3 py-1 bg-slate-800/50 rounded text-[10px] text-slate-400 font-mono">
+                  api-scan-dashboard.tsx
+                </div>
+             </div>
 
-          {/* Scanning Nodes Visualization */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-            className="flex items-center justify-center gap-4 pt-8"
-          >
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                className={`hex-node ${scanningNodes.includes(i) ? 'active' : ''}`}
-                style={{
-                  background: scanningNodes.includes(i) ? '#00ff41' : '#334155',
-                }}
-              />
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* FEATURES SECTION */}
-      <section id="features" className="py-32 px-6 relative z-20">
-        <div className="max-w-7xl mx-auto">
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-24 space-y-6"
-          >
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-panel border border-[#00d9ff]/20">
-              <Network className="w-4 h-4 text-[#00d9ff]" />
-              <span className="text-[#00d9ff] text-sm font-bold uppercase tracking-widest font-mono">
-                Scan Capabilities
-              </span>
-            </div>
-            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
-              <span className="text-white">
-                COMPREHENSIVE
-              </span>
-              <br />
-              <span className="text-[#00ff41]">
-                THREAT DETECTION
-              </span>
-            </h2>
-            <p className="text-[#64748b] text-xl max-w-2xl mx-auto leading-relaxed font-mono">
-              Multi-layer security analysis powered by autonomous scanning agents
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            {[
-              {
-                icon: Binary,
-                title: "SPEC PARSER",
-                description: "Instant OpenAPI 2.0/3.0 analysis. Extracts endpoints, parameters, schemas, and auth patterns in milliseconds with zero configuration.",
-                color: "#00ff41",
-                delay: 0
-              },
-              {
-                icon: Bot,
-                title: "AI AGENTS",
-                description: "Autonomous testing agents generate intelligent attack vectors, covering edge cases and vulnerabilities traditional scanners can't detect.",
-                color: "#00d9ff",
-                delay: 0.1
-              },
-              {
-                icon: Zap,
-                title: "LIVE EXECUTION",
-                description: "Real-time test suite deployment against staging or production. Monitor live logs with instant pass/fail feedback and packet analysis.",
-                color: "#00ff41",
-                delay: 0.2
-              },
-              {
-                icon: Bug,
-                title: "VULN DETECTION",
-                description: "Automatic detection of SQL injection, XSS, broken authentication, IDOR, and complete OWASP API Top 10 coverage with exploit PoC.",
-                color: "#ff1744",
-                delay: 0.3
-              },
-              {
-                icon: Lock,
-                title: "SECRETS VAULT",
-                description: "Military-grade encryption for API keys, OAuth tokens, and environment variables. Zero-knowledge architecture with HSM integration.",
-                color: "#b388ff",
-                delay: 0.4
-              },
-              {
-                icon: Activity,
-                title: "INTEL REPORTS",
-                description: "Generate comprehensive threat intelligence reports with CVE mappings, severity scores, remediation steps, and compliance tracking.",
-                color: "#ffa000",
-                delay: 0.5
-              },
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: feature.delay }}
-                className="group glass-panel p-8 relative overflow-hidden motion-trail"
-              >
-                <div className="scan-wave" style={{ animationDelay: `${i * 0.5}s` }} />
-                
-                <motion.div 
-                  className="w-16 h-16 rounded-xl flex items-center justify-center mb-6 relative z-10 border"
-                  style={{
-                    background: `rgba(${feature.color === '#00ff41' ? '0,255,65' : feature.color === '#00d9ff' ? '0,217,255' : feature.color === '#ff1744' ? '255,23,68' : feature.color === '#b388ff' ? '179,136,255' : '255,160,0'},0.1)`,
-                    borderColor: feature.color,
-                    boxShadow: `0 0 20px ${feature.color}40`,
-                  }}
-                  whileHover={{ rotate: 360, scale: 1.1 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <feature.icon className="w-8 h-8" style={{ color: feature.color }} />
-                </motion.div>
-                
-                <h3 className="text-xl font-black mb-4 text-white font-mono uppercase tracking-wider relative z-10">{feature.title}</h3>
-                <p className="text-[#64748b] leading-relaxed relative z-10 font-mono text-sm">{feature.description}</p>
-                
-                <div 
-                  className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-                  style={{ background: feature.color }}
-                />
-              </motion.div>
-            ))}
-
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS with Terminal */}
-      <section id="scan-types" className="py-32 px-6 relative z-20">
-        <div className="max-w-6xl mx-auto">
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-24 space-y-6"
-          >
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full glass-panel border border-[#00ff41]/20">
-              <Terminal className="w-4 h-4 text-[#00ff41]" />
-              <span className="text-[#00ff41] text-sm font-bold uppercase tracking-widest font-mono">
-                Scan Protocol
-              </span>
-            </div>
-            <h2 className="text-5xl md:text-6xl font-black tracking-tight">
-              <span className="text-white">
-                FROM UPLOAD TO
-              </span>
-              <br />
-              <span className="text-[#00d9ff]">
-                THREAT INTEL
-              </span>
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            
-            <div className="space-y-6">
-              
-              {[
-                {
-                  number: "01",
-                  title: "UPLOAD SPEC",
-                  description: "Deploy OpenAPI/Swagger file via CLI, API, or drag-drop interface. Auto-detection and parsing in <100ms.",
-                  color: "#00ff41"
-                },
-                {
-                  number: "02",
-                  title: "CONFIGURE ENV",
-                  description: "Define target base URL. Store credentials in encrypted vault. Configure rate limits and request headers.",
-                  color: "#00d9ff"
-                },
-                {
-                  number: "03",
-                  title: "AI STRATEGY",
-                  description: "Review autonomous agent-generated test vectors covering security, logic, and performance attack surfaces.",
-                  color: "#b388ff"
-                },
-                {
-                  number: "04",
-                  title: "EXECUTE SCAN",
-                  description: "Deploy scan agents. Monitor real-time packet analysis. Receive instant vulnerability alerts with severity scores.",
-                  color: "#ffa000"
-                },
-              ].map((step, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="api-card group"
-                >
-                  <div className="flex gap-6">
-                    <motion.div 
-                      className="flex-none w-14 h-14 rounded-lg border flex items-center justify-center font-black text-xl font-mono"
-                      style={{
-                        borderColor: step.color,
-                        color: step.color,
-                        background: `rgba(${step.color === '#00ff41' ? '0,255,65' : step.color === '#00d9ff' ? '0,217,255' : step.color === '#b388ff' ? '179,136,255' : '255,160,0'},0.1)`,
-                      }}
-                      whileHover={{ scale: 1.15, rotate: 360 }}
-                      transition={{ duration: 0.6 }}
-                    >
-                      {step.number}
-                    </motion.div>
-                    <div className="space-y-2">
-                      <h4 className="font-black text-xl text-white font-mono uppercase tracking-wider">{step.title}</h4>
-                      <p className="text-[#64748b] leading-relaxed font-mono text-sm">{step.description}</p>
-                    </div>
+             {/* Inner Content Mock */}
+             <div className="p-6 md:p-10 grid grid-cols-3 gap-6 text-left">
+                {/* Sidebar Mock */}
+                <div className="col-span-1 space-y-4 hidden md:block">
+                  <div className="h-8 w-32 bg-slate-800 rounded mb-6" />
+                  <div className="space-y-2">
+                    {[1,2,3,4].map(i => <div key={i} className="h-4 w-full bg-slate-800/50 rounded" />)}
                   </div>
-                </motion.div>
-              ))}
-
-            </div>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="relative"
-            >
-              <div className="terminal">
-                <div className="terminal-header">
-                  <div className="terminal-dot" />
-                  <div className="terminal-dot" />
-                  <div className="terminal-dot active" />
-                  <span className="text-xs text-[#64748b] ml-3 font-mono font-bold uppercase">scan-execution.log</span>
                 </div>
-
-                <div className="terminal-content">
-                  {[
-                    { time: "14:32:01", type: "SCAN", color: "#b388ff", message: "Initializing OpenAPI parser..." },
-                    { time: "14:32:03", type: "SCAN", color: "#b388ff", message: "Discovered 47 endpoints | 8 resources" },
-                    { time: "14:32:05", type: "AI", color: "#00d9ff", message: "Generating attack vectors..." },
-                    { time: "14:32:08", type: "AI", color: "#00d9ff", message: "Created 284 test scenarios" },
-                    { time: "14:32:10", type: "OK", color: "#00ff41", message: "GET /api/v1/users → 200 [PASS]" },
-                    { time: "14:32:12", type: "OK", color: "#00ff41", message: "POST /auth/login → Token valid [PASS]" },
-                    { time: "14:32:15", type: "VULN", color: "#ff1744", message: "SQLi detected: /api/v1/search [CRITICAL]" },
-                    { time: "14:32:17", type: "WARN", color: "#ffa000", message: "Broken auth: /admin/users [HIGH]" },
-                    { time: "14:32:20", type: "SCAN", color: "#b388ff", message: "Scan complete | 282/284 passed | 2 critical" },
-                  ].map((log, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="terminal-line"
-                    >
-                      <span className="terminal-timestamp">[{log.time}]</span>
-                      <span className="terminal-type font-black uppercase" style={{ color: log.color }}>
-                        {log.type}
-                      </span>
-                      <span className="text-[#e2e8f0]">{log.message}</span>
-                    </motion.div>
-                  ))}
+                
+                {/* Main Content Mock */}
+                <div className="col-span-3 md:col-span-2 space-y-6">
+                   <div className="flex gap-4 mb-8">
+                      <div className="h-24 flex-1 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                        <div className="h-4 w-8 bg-blue-500/40 rounded mb-2" />
+                        <div className="h-8 w-16 bg-blue-500/20 rounded" />
+                      </div>
+                      <div className="h-24 flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                        <div className="h-4 w-8 bg-slate-700 rounded mb-2" />
+                        <div className="h-8 w-16 bg-slate-700/50 rounded" />
+                      </div>
+                   </div>
+                   
+                   {/* Terminal Mock lines */}
+                   <div className="space-y-3 font-mono text-xs">
+                      <div className="flex gap-3 text-slate-500">
+                        <span>14:32:01</span>
+                        <span className="text-blue-400">INFO</span>
+                        <span>Initializing autonomous agents...</span>
+                      </div>
+                      <div className="flex gap-3 text-slate-500">
+                        <span>14:32:02</span>
+                        <span className="text-green-400">SUCCESS</span>
+                        <span>Spec parsed: 42 endpoints found</span>
+                      </div>
+                      <div className="flex gap-3 text-slate-500">
+                        <span>14:32:05</span>
+                        <span className="text-red-400">ALERT</span>
+                        <span className="text-slate-300">SQL Injection detected on /api/login</span>
+                      </div>
+                   </div>
                 </div>
+             </div>
 
-                {/* Sonar Pulses */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                  <div className="sonar-pulse" />
-                  <div className="sonar-pulse" />
-                  <div className="sonar-pulse" />
-                </div>
-              </div>
-            </motion.div>
-
-          </div>
+             {/* Glow Overlay */}
+             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none" />
+          </motion.div>
         </div>
       </section>
 
-      {/* CTA SECTION */}
-      <section className="py-32 px-6 relative z-20">
-        <div className="absolute inset-0 opacity-30">
-          <div className="radar-container w-full h-full">
-            <div className="radar-sweep" />
-          </div>
-        </div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center relative z-10 space-y-10"
-        >
-          <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-tight">
-            <span className="text-white">
-              READY TO
-            </span>
-            <br />
-            <span className="text-[#00ff41]">
-              SCAN YOUR API?
-            </span>
-          </h2>
-          
-          <p className="text-2xl text-[#64748b] max-w-2xl mx-auto leading-relaxed font-mono">
-            Deploy <span className="text-[#00ff41] font-bold">APISCAN</span> and detect vulnerabilities before attackers do. Real-time threat intelligence in 60 seconds.
-          </p>
-
-          <div className="scan-progress max-w-md mx-auto">
-            <div className="scan-progress-bar" style={{ width: '100%' }} />
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
-            <Link href="/login">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button size="lg" className="h-16 px-12 text-lg btn-scan">
-                  <Radar className="mr-3 w-5 h-5" />
-                  Deploy Scanner
-                </Button>
-              </motion.div>
-            </Link>
-            <Link href="/docs">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Button variant="outline" size="lg" className="h-16 px-12 text-lg font-bold glass-panel border-[#334155] hover:bg-[#00ff41]/5 hover:border-[#00ff41]/30 font-mono uppercase">
-                  <Server className="mr-3 w-5 h-5" />
-                  Documentation
-                </Button>
-              </motion.div>
-            </Link>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="py-20 border-t border-[#1e293b] glass-panel relative z-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-16">
-            
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#00ff41] to-[#00d9ff] rounded-lg flex items-center justify-center border border-[#00ff41]/30">
-                  <Radar className="w-5 h-5 text-[#0a0e1a]" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xl font-black text-[#00ff41]">APISCAN</span>
-                  <span className="text-[8px] font-mono text-[#64748b] tracking-widest uppercase">
-                    Security Platform
-                  </span>
-                </div>
-              </div>
-              <p className="text-[#64748b] text-sm leading-relaxed font-mono">
-                Autonomous API security scanning powered by AI threat intelligence.
-              </p>
-            </div>
-
-            {[
-              {
-                title: "PLATFORM",
-                links: ["Features", "Pricing", "Documentation", "API"]
-              },
-              {
-                title: "COMPANY",
-                links: ["About", "Blog", "Careers", "Contact"]
-              },
-              {
-                title: "LEGAL",
-                links: ["Privacy", "Terms", "Security", "Compliance"]
-              }
-            ].map((section, i) => (
-              <div key={i}>
-                <h4 className="font-black text-white mb-5 text-sm font-mono uppercase tracking-widest">{section.title}</h4>
-                <ul className="space-y-3 text-sm text-[#64748b] font-mono">
-                  {section.links.map((link, j) => (
-                    <li key={j}>
-                      <Link href={`/${link.toLowerCase()}`} className="hover:text-[#00ff41] transition-colors uppercase tracking-wide">
-                        {link}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+      {/* --- TRUST BADGES --- */}
+      <section className="py-10 border-y border-white/5 bg-slate-900/30">
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-sm font-medium text-slate-500 mb-8">TRUSTED BY DEVELOPERS AT</p>
+          <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+            {['Acme Corp', 'GlobalTech', 'Nebula', 'Vertex', 'Orbit'].map((brand) => (
+              <div key={brand} className="text-xl font-bold text-white flex items-center gap-2">
+                 <div className="w-6 h-6 bg-white/20 rounded-full" /> {brand}
               </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="pt-10 border-t border-[#1e293b] flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-[#64748b] text-sm font-mono font-bold uppercase tracking-wide">
-              © 2026 APISCAN · All Rights Reserved
+      {/* --- FEATURES (BENTO GRID) --- */}
+      <section id="features" className="py-24 px-6 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+              Complete Coverage for your API
+            </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+              Our autonomous agents handle the heavy lifting, providing comprehensive security testing without the manual configuration.
             </p>
-            <div className="flex items-center gap-6">
-              {[
-                { Icon: Github, href: "https://github.com" },
-                { Icon: Twitter, href: "https://twitter.com" },
-                { Icon: Linkedin, href: "https://linkedin.com" }
-              ].map((social, i) => (
-                <Link key={i} href={social.href}>
-                  <motion.div
-                    whileHover={{ scale: 1.2, rotate: 5 }}
-                    className="text-[#64748b] hover:text-[#00ff41] transition-colors"
-                  >
-                    <social.Icon className="w-5 h-5" />
-                  </motion.div>
-                </Link>
-              ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Feature 1 */}
+            <div className="md:col-span-2 relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
+              <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-100 transition-opacity">
+                <Radar className="w-32 h-32 text-blue-600" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-6">
+                   <Bot className="w-6 h-6 text-blue-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">AI-Driven Threat Detection</h3>
+                <p className="text-slate-400 max-w-md">Our agents don't just fuzz; they understand your API logic. They generate intelligent attack vectors covering Edge cases, IDOR, and Broken Auth.</p>
+              </div>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
+              <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6">
+                 <Code2 className="w-6 h-6 text-cyan-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Spec-First Analysis</h3>
+              <p className="text-slate-400">Simply upload your Swagger/OpenAPI file. We parse, validate, and build a test plan in seconds.</p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
+              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6">
+                 <Zap className="w-6 h-6 text-purple-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">CI/CD Integration</h3>
+              <p className="text-slate-400">Block builds if critical vulnerabilities are found. Works with GitHub Actions, GitLab, and Jenkins.</p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="md:col-span-2 relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
+               <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:opacity-20 transition-opacity">
+                 <div className="w-64 h-64 bg-green-500 rounded-full blur-[100px]" />
+               </div>
+               <div className="relative z-10">
+                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-6">
+                   <Shield className="w-6 h-6 text-green-400" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">OWASP Top 10 Coverage</h3>
+                <p className="text-slate-400 max-w-md">Automatically scan for SQL Injection, XSS, SSRF, and more. We keep our vulnerability database updated daily.</p>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* --- HOW IT WORKS (Steps) --- */}
+      <section id="how-it-works" className="py-24 px-6 border-t border-white/5 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4">Zero Configuration Required</h2>
+            <p className="text-slate-400">Go from upload to report in three simple steps.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+             {[
+                { title: "Upload Spec", desc: "Drag & drop your OpenAPI JSON/YAML file.", icon: Search },
+                { title: "AI Analysis", desc: "Our engine maps your API surface and generates tests.", icon: Workflow },
+                { title: "Get Report", desc: "Receive a detailed report with remediation steps.", icon: CheckCircle2 }
+             ].map((step, i) => (
+                <div key={i} className="relative">
+                   <div className="flex items-center gap-4 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-blue-400 font-bold">
+                         {i + 1}
+                      </div>
+                      {i !== 2 && <div className="hidden md:block h-px flex-1 bg-slate-800" />}
+                   </div>
+                   <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
+                   <p className="text-slate-400 text-sm">{step.desc}</p>
+                </div>
+             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* --- CTA SECTION --- */}
+      <section className="py-32 px-6">
+         <div className="max-w-5xl mx-auto bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/20 rounded-3xl p-12 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.3),transparent_50%)]" />
+            
+            <div className="relative z-10 space-y-8">
+               <h2 className="text-4xl md:text-5xl font-bold text-white">Ready to secure your infrastructure?</h2>
+               <p className="text-blue-100 text-lg max-w-2xl mx-auto">
+                 Join thousands of developers who trust ApiScan to keep their production environment safe.
+               </p>
+               <Link href="/login">
+                  <Button size="lg" className="h-14 px-8 bg-white text-blue-900 hover:bg-blue-50 font-bold rounded-full text-lg shadow-xl">
+                    Get Started for Free
+                  </Button>
+               </Link>
+            </div>
+         </div>
+      </section>
+
+      {/* --- FOOTER --- */}
+      <footer className="border-t border-slate-800 bg-slate-950 py-12 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+           <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-slate-800 rounded flex items-center justify-center">
+                 <Bot className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold text-white">ApiScan</span>
+           </div>
+           
+           <div className="text-slate-500 text-sm">
+              © 2026 ApiScan Inc. All rights reserved.
+           </div>
+
+           <div className="flex gap-6">
+              <Github className="w-5 h-5 text-slate-500 hover:text-white cursor-pointer transition-colors" />
+              <Twitter className="w-5 h-5 text-slate-500 hover:text-white cursor-pointer transition-colors" />
+              <Linkedin className="w-5 h-5 text-slate-500 hover:text-white cursor-pointer transition-colors" />
+           </div>
         </div>
       </footer>
 
