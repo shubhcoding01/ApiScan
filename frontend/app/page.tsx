@@ -240,95 +240,117 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 import { 
   ArrowRight, 
   Shield, 
   Zap, 
   Bot, 
-  Terminal, 
   CheckCircle2, 
-  Lock, 
   Play, 
   Github, 
   Twitter, 
   Linkedin, 
   Radar, 
-  Server, 
-  ChevronRight,
   Code2,
   Workflow,
-  Search
+  Search,
+  Sparkles,
+  Activity,
+  Terminal,
+  Server
 } from 'lucide-react';
 
 export default function LandingPage() {
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"]
+  });
+
+  const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.9]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, 100]);
+
+  // Navigation Items Configuration
+  const navItems = [
+    { label: 'Features', href: '#features' },
+    { label: 'How it Works', href: '#how-it-works' },
+    { label: 'Pricing', href: '#pricing' },
+    { label: 'Docs', href: '/docs' }, // ✅ Points to /docs page
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 selection:bg-blue-500/30 font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#020617] text-slate-100 selection:bg-blue-500/30 font-sans overflow-x-hidden">
       
-      {/* --- BACKGROUND EFFECTS --- */}
+      {/* --- AMBIENT BACKGROUND --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20" />
+        {/* Subtle Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-[0.15]" />
         
-        {/* Top Spotlight */}
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-600/20 blur-[100px] rounded-full" />
-        <div className="absolute top-[-10%] left-1/3 w-[600px] h-[400px] bg-cyan-500/10 blur-[120px] rounded-full" />
+        {/* Spotlights */}
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-indigo-500/10 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute top-[20%] right-0 w-[600px] h-[400px] bg-blue-500/10 blur-[120px] rounded-full mix-blend-screen" />
       </div>
 
       {/* --- NAVBAR --- */}
-      <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl">
+      <motion.nav 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#020617]/80 backdrop-blur-md"
+      >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-              <Bot className="w-5 h-5" />
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+              <Bot className="h-5 w-5 text-white" />
+              <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20" />
             </div>
             <span className="text-lg font-bold tracking-tight text-white">
               ApiScan
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-            {['Features', 'How it Works', 'Pricing', 'Docs'].map((item) => (
+          <div className="hidden md:flex items-center gap-8">
+            {navItems.map((item) => (
               <Link 
-                key={item} 
-                href={`#${item.toLowerCase().replace(/\s+/g, '-')}`}
-                className="hover:text-blue-400 transition-colors"
+                key={item.label} 
+                href={item.href}
+                className="text-sm font-medium text-slate-400 hover:text-white transition-colors relative group"
               >
-                {item}
+                {item.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-500 transition-all duration-300 group-hover:w-full" />
               </Link>
             ))}
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-slate-300 hover:text-white transition-colors">
+            <Link href="/login" className="text-sm font-medium text-slate-400 hover:text-white transition-colors hidden sm:block">
               Log in
             </Link>
             <Link href="/login">
-              <Button size="sm" className="bg-blue-600 hover:bg-blue-500 text-white border-0 shadow-lg shadow-blue-900/20 rounded-full px-5">
+              <Button size="sm" className="bg-white text-black hover:bg-slate-200 font-semibold rounded-full px-5 h-9 transition-all hover:scale-105">
                 Get Started
               </Button>
             </Link>
           </div>
           
         </div>
-      </nav>
+      </motion.nav>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative z-10 pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto text-center space-y-8">
+      <section ref={heroRef} className="relative z-10 pt-32 pb-20 px-6">
+        <motion.div style={{ opacity, scale, y }} className="max-w-7xl mx-auto text-center space-y-8">
           
           {/* Badge */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium backdrop-blur-sm shadow-[0_0_15px_rgba(59,130,246,0.3)]"
           >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            v1.0 Now Available
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>v1.0 Public Release</span>
           </motion.div>
 
           {/* Headline */}
@@ -339,23 +361,23 @@ export default function LandingPage() {
             className="text-5xl md:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.1]"
           >
             Automate your <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 animate-gradient">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-cyan-400">
               API Security Testing
             </span>
           </motion.h1>
 
-          {/* Subheadline */}
+          {/* Subtext */}
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed"
           >
-            Detect vulnerabilities, logic flaws, and broken auth in real-time. 
-            Upload your OpenAPI spec and let our autonomous agents do the rest.
+            Continuous vulnerability scanning for modern engineering teams. 
+            Detect OWASP risks, broken auth, and logic flaws before deployment.
           </motion.p>
 
-          {/* CTAs */}
+          {/* Buttons */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -363,185 +385,242 @@ export default function LandingPage() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
           >
             <Link href="/login">
-              <Button size="lg" className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-base shadow-xl shadow-blue-900/20">
+              <Button size="lg" className="h-12 px-8 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-base shadow-[0_0_30px_rgba(37,99,235,0.3)] hover:shadow-[0_0_40px_rgba(37,99,235,0.5)] transition-all duration-300">
                 Start Scanning Free
                 <ArrowRight className="ml-2 w-4 h-4" />
               </Button>
             </Link>
             <Link href="#demo">
-              <Button variant="outline" size="lg" className="h-12 px-8 border-slate-700 hover:bg-slate-800 text-slate-300 rounded-full text-base">
+              <Button variant="outline" size="lg" className="h-12 px-8 border-slate-800 bg-slate-950/50 hover:bg-slate-900 text-slate-300 hover:text-white rounded-full text-base backdrop-blur-sm">
                 <Play className="mr-2 w-4 h-4" />
-                View Demo
+                Live Demo
               </Button>
             </Link>
           </motion.div>
 
-          {/* Mock Dashboard Preview */}
+          {/* --- DASHBOARD MOCKUP --- */}
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8 }}
-            className="mt-16 relative mx-auto max-w-5xl rounded-xl border border-slate-800 bg-slate-900/50 shadow-2xl backdrop-blur-sm overflow-hidden"
+            className="mt-16 relative mx-auto max-w-5xl rounded-2xl border border-slate-800 bg-[#0f172a]/80 shadow-2xl backdrop-blur-sm overflow-hidden group"
           >
-             {/* Window Controls */}
-             <div className="h-10 border-b border-slate-800 bg-slate-900/80 flex items-center px-4 gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
-                <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
-                <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
-                <div className="ml-4 px-3 py-1 bg-slate-800/50 rounded text-[10px] text-slate-400 font-mono">
-                  api-scan-dashboard.tsx
-                </div>
-             </div>
+            {/* Glossy Reflection */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            
+            {/* Window Bar */}
+            <div className="h-10 border-b border-slate-800 bg-[#020617] flex items-center px-4 gap-2">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-slate-700" />
+                <div className="w-3 h-3 rounded-full bg-slate-700" />
+                <div className="w-3 h-3 rounded-full bg-slate-700" />
+              </div>
+              <div className="ml-4 px-3 py-1 bg-slate-800/50 rounded-md text-[10px] text-slate-500 font-mono flex items-center gap-2">
+                <Lock className="w-3 h-3" /> dashboard.apiscan.io
+              </div>
+            </div>
 
-             {/* Inner Content Mock */}
-             <div className="p-6 md:p-10 grid grid-cols-3 gap-6 text-left">
-                {/* Sidebar Mock */}
-                <div className="col-span-1 space-y-4 hidden md:block">
-                  <div className="h-8 w-32 bg-slate-800 rounded mb-6" />
-                  <div className="space-y-2">
-                    {[1,2,3,4].map(i => <div key={i} className="h-4 w-full bg-slate-800/50 rounded" />)}
+            {/* Dashboard Content */}
+            <div className="p-6 md:p-8 grid grid-cols-12 gap-6 text-left relative">
+               
+               {/* Scanning Line Animation */}
+               <motion.div 
+                 className="absolute top-0 left-0 right-0 h-[2px] bg-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.5)] z-20"
+                 animate={{ top: ['0%', '100%'] }}
+                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+               />
+
+               {/* Sidebar */}
+               <div className="col-span-3 hidden md:block space-y-4">
+                  <div className="h-8 w-24 bg-slate-800/50 rounded mb-6" />
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="h-4 w-full bg-slate-800/30 rounded" />
+                  ))}
+               </div>
+
+               {/* Main Area */}
+               <div className="col-span-12 md:col-span-9 space-y-6">
+                  {/* Stats Row */}
+                  <div className="grid grid-cols-3 gap-4">
+                     <div className="h-24 bg-blue-900/10 border border-blue-500/20 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                           <Activity className="w-5 h-5 text-blue-400" />
+                           <span className="text-xs text-blue-400 font-mono">RUNNING</span>
+                        </div>
+                        <div className="h-2 w-16 bg-blue-500/20 rounded mb-2" />
+                        <div className="h-6 w-12 bg-blue-500/30 rounded" />
+                     </div>
+                     <div className="h-24 bg-red-900/10 border border-red-500/20 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                           <Shield className="w-5 h-5 text-red-400" />
+                           <span className="text-xs text-red-400 font-mono">CRITICAL</span>
+                        </div>
+                        <div className="h-2 w-16 bg-red-500/20 rounded mb-2" />
+                        <div className="h-6 w-8 bg-red-500/30 rounded" />
+                     </div>
+                     <div className="h-24 bg-green-900/10 border border-green-500/20 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                           <CheckCircle2 className="w-5 h-5 text-green-400" />
+                           <span className="text-xs text-green-400 font-mono">PASSED</span>
+                        </div>
+                        <div className="h-2 w-16 bg-green-500/20 rounded mb-2" />
+                        <div className="h-6 w-20 bg-green-500/30 rounded" />
+                     </div>
                   </div>
-                </div>
-                
-                {/* Main Content Mock */}
-                <div className="col-span-3 md:col-span-2 space-y-6">
-                   <div className="flex gap-4 mb-8">
-                      <div className="h-24 flex-1 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                        <div className="h-4 w-8 bg-blue-500/40 rounded mb-2" />
-                        <div className="h-8 w-16 bg-blue-500/20 rounded" />
-                      </div>
-                      <div className="h-24 flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
-                        <div className="h-4 w-8 bg-slate-700 rounded mb-2" />
-                        <div className="h-8 w-16 bg-slate-700/50 rounded" />
-                      </div>
-                   </div>
-                   
-                   {/* Terminal Mock lines */}
-                   <div className="space-y-3 font-mono text-xs">
-                      <div className="flex gap-3 text-slate-500">
+
+                  {/* Terminal Log */}
+                  <div className="bg-[#020617] rounded-lg border border-slate-800 p-4 font-mono text-xs space-y-3">
+                     <div className="flex gap-3 text-slate-500">
                         <span>14:32:01</span>
                         <span className="text-blue-400">INFO</span>
                         <span>Initializing autonomous agents...</span>
-                      </div>
-                      <div className="flex gap-3 text-slate-500">
+                     </div>
+                     <div className="flex gap-3 text-slate-500">
                         <span>14:32:02</span>
                         <span className="text-green-400">SUCCESS</span>
-                        <span>Spec parsed: 42 endpoints found</span>
-                      </div>
-                      <div className="flex gap-3 text-slate-500">
+                        <span>Spec parsed: 42 endpoints identified</span>
+                     </div>
+                     <div className="flex gap-3 text-slate-500">
                         <span>14:32:05</span>
+                        <span className="text-purple-400">SCAN</span>
+                        <span>Testing auth bypass scenarios...</span>
+                     </div>
+                     <motion.div 
+                        className="flex gap-3 text-slate-500"
+                        animate={{ opacity: [0, 1] }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                     >
+                        <span>14:32:08</span>
                         <span className="text-red-400">ALERT</span>
-                        <span className="text-slate-300">SQL Injection detected on /api/login</span>
-                      </div>
-                   </div>
-                </div>
-             </div>
-
-             {/* Glow Overlay */}
-             <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none" />
+                        <span className="text-slate-200">SQL Injection detected on /api/login</span>
+                     </motion.div>
+                  </div>
+               </div>
+            </div>
           </motion.div>
-        </div>
+
+        </motion.div>
       </section>
 
-      {/* --- TRUST BADGES --- */}
-      <section className="py-10 border-y border-white/5 bg-slate-900/30">
+      {/* --- TRUST LOGOS --- */}
+      <section className="py-10 border-y border-slate-900 bg-[#020617]/50">
         <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-sm font-medium text-slate-500 mb-8">TRUSTED BY DEVELOPERS AT</p>
-          <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+          <p className="text-xs font-semibold text-slate-500 mb-8 tracking-widest uppercase">Trusted by security teams at</p>
+          <div className="flex flex-wrap justify-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
             {['Acme Corp', 'GlobalTech', 'Nebula', 'Vertex', 'Orbit'].map((brand) => (
-              <div key={brand} className="text-xl font-bold text-white flex items-center gap-2">
-                 <div className="w-6 h-6 bg-white/20 rounded-full" /> {brand}
+              <div key={brand} className="text-lg font-bold text-white flex items-center gap-2">
+                 <div className="w-5 h-5 bg-white/20 rounded-full" /> {brand}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* --- FEATURES (BENTO GRID) --- */}
-      <section id="features" className="py-24 px-6 relative z-10">
+      {/* --- FEATURES GRID --- */}
+      <section id="features" className="py-24 px-6 relative z-10 bg-slate-950/50">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Complete Coverage for your API
             </h2>
-            <p className="text-slate-400 max-w-2xl mx-auto text-lg">
+            <p className="text-slate-400 text-lg">
               Our autonomous agents handle the heavy lifting, providing comprehensive security testing without the manual configuration.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Feature 1 */}
-            <div className="md:col-span-2 relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
-              <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-100 transition-opacity">
-                <Radar className="w-32 h-32 text-blue-600" />
+            {/* Feature 1 - Large */}
+            <motion.div 
+              className="md:col-span-2 relative group overflow-hidden rounded-2xl border border-slate-800 bg-[#020617] p-8 hover:border-blue-500/30 transition-colors"
+              whileHover={{ y: -5 }}
+            >
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Radar className="w-32 h-32 text-blue-500" />
               </div>
               <div className="relative z-10">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-lg flex items-center justify-center mb-6">
-                   <Bot className="w-6 h-6 text-blue-400" />
+                <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-6 border border-blue-500/20 text-blue-400">
+                   <Bot className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3">AI-Driven Threat Detection</h3>
-                <p className="text-slate-400 max-w-md">Our agents don't just fuzz; they understand your API logic. They generate intelligent attack vectors covering Edge cases, IDOR, and Broken Auth.</p>
+                <p className="text-slate-400 max-w-md leading-relaxed">
+                  Our agents don't just fuzz; they understand your API logic. They generate intelligent attack vectors covering Edge cases, IDOR, and Broken Auth.
+                </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 2 */}
-            <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
-              <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6">
-                 <Code2 className="w-6 h-6 text-cyan-400" />
+            <motion.div 
+              className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-[#020617] p-8 hover:border-cyan-500/30 transition-colors"
+              whileHover={{ y: -5 }}
+            >
+              <div className="w-12 h-12 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-6 border border-cyan-500/20 text-cyan-400">
+                 <Code2 className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Spec-First Analysis</h3>
-              <p className="text-slate-400">Simply upload your Swagger/OpenAPI file. We parse, validate, and build a test plan in seconds.</p>
-            </div>
+              <p className="text-slate-400 leading-relaxed">
+                Upload your OpenAPI file. We parse, validate, and build a test plan in seconds.
+              </p>
+            </motion.div>
 
             {/* Feature 3 */}
-            <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6">
-                 <Zap className="w-6 h-6 text-purple-400" />
+            <motion.div 
+              className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-[#020617] p-8 hover:border-purple-500/30 transition-colors"
+              whileHover={{ y: -5 }}
+            >
+              <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-6 border border-purple-500/20 text-purple-400">
+                 <Zap className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">CI/CD Integration</h3>
-              <p className="text-slate-400">Block builds if critical vulnerabilities are found. Works with GitHub Actions, GitLab, and Jenkins.</p>
-            </div>
+              <p className="text-slate-400 leading-relaxed">
+                Block builds if critical vulnerabilities are found. Works with GitHub, GitLab, and Jenkins.
+              </p>
+            </motion.div>
 
-            {/* Feature 4 */}
-            <div className="md:col-span-2 relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50 p-8 hover:border-slate-700 transition-colors">
-               <div className="absolute -right-10 -bottom-10 opacity-10 group-hover:opacity-20 transition-opacity">
+            {/* Feature 4 - Large */}
+            <motion.div 
+              className="md:col-span-2 relative group overflow-hidden rounded-2xl border border-slate-800 bg-[#020617] p-8 hover:border-green-500/30 transition-colors"
+              whileHover={{ y: -5 }}
+            >
+               <div className="absolute -right-10 -bottom-10 opacity-5 group-hover:opacity-10 transition-opacity">
                  <div className="w-64 h-64 bg-green-500 rounded-full blur-[100px]" />
                </div>
                <div className="relative z-10">
-                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-6">
-                   <Shield className="w-6 h-6 text-green-400" />
+                <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mb-6 border border-green-500/20 text-green-400">
+                   <Shield className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl font-bold text-white mb-3">OWASP Top 10 Coverage</h3>
-                <p className="text-slate-400 max-w-md">Automatically scan for SQL Injection, XSS, SSRF, and more. We keep our vulnerability database updated daily.</p>
+                <p className="text-slate-400 max-w-md leading-relaxed">
+                  Automatically scan for SQL Injection, XSS, SSRF, and more. We keep our vulnerability database updated daily.
+                </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* --- HOW IT WORKS (Steps) --- */}
-      <section id="how-it-works" className="py-24 px-6 border-t border-white/5 relative z-10">
+      {/* --- HOW IT WORKS --- */}
+      <section id="how-it-works" className="py-24 px-6 border-t border-slate-800 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-white mb-4">Zero Configuration Required</h2>
             <p className="text-slate-400">Go from upload to report in three simple steps.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
              {[
                 { title: "Upload Spec", desc: "Drag & drop your OpenAPI JSON/YAML file.", icon: Search },
                 { title: "AI Analysis", desc: "Our engine maps your API surface and generates tests.", icon: Workflow },
                 { title: "Get Report", desc: "Receive a detailed report with remediation steps.", icon: CheckCircle2 }
              ].map((step, i) => (
-                <div key={i} className="relative">
-                   <div className="flex items-center gap-4 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-blue-400 font-bold">
-                         {i + 1}
+                <div key={i} className="relative group">
+                   <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-blue-500 font-bold shadow-lg group-hover:border-blue-500/50 transition-colors">
+                         {step.icon && <step.icon className="w-5 h-5" />}
                       </div>
-                      {i !== 2 && <div className="hidden md:block h-px flex-1 bg-slate-800" />}
+                      {i !== 2 && <div className="hidden md:block h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent" />}
                    </div>
                    <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                   <p className="text-slate-400 text-sm">{step.desc}</p>
+                   <p className="text-slate-400 text-sm leading-relaxed">{step.desc}</p>
                 </div>
              ))}
           </div>
@@ -550,17 +629,20 @@ export default function LandingPage() {
 
       {/* --- CTA SECTION --- */}
       <section className="py-32 px-6">
-         <div className="max-w-5xl mx-auto bg-gradient-to-br from-blue-900/50 to-slate-900 border border-blue-500/20 rounded-3xl p-12 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.3),transparent_50%)]" />
+         <div className="max-w-5xl mx-auto bg-gradient-to-br from-[#0f172a] to-[#020617] border border-blue-500/20 rounded-3xl p-12 text-center relative overflow-hidden group">
+            
+            {/* Background Animation */}
+            <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.15),transparent_70%)] opacity-50 group-hover:opacity-100 transition-opacity duration-1000" />
             
             <div className="relative z-10 space-y-8">
-               <h2 className="text-4xl md:text-5xl font-bold text-white">Ready to secure your infrastructure?</h2>
-               <p className="text-blue-100 text-lg max-w-2xl mx-auto">
+               <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">Ready to secure your infrastructure?</h2>
+               <p className="text-blue-100/80 text-lg max-w-2xl mx-auto">
                  Join thousands of developers who trust ApiScan to keep their production environment safe.
                </p>
                <Link href="/login">
-                  <Button size="lg" className="h-14 px-8 bg-white text-blue-900 hover:bg-blue-50 font-bold rounded-full text-lg shadow-xl">
+                  <Button size="lg" className="h-14 px-10 bg-white text-blue-950 hover:bg-blue-50 font-bold rounded-full text-lg shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-transform hover:scale-105">
                     Get Started for Free
+                    <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                </Link>
             </div>
@@ -568,13 +650,13 @@ export default function LandingPage() {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="border-t border-slate-800 bg-slate-950 py-12 px-6">
+      <footer className="border-t border-slate-900 bg-[#020617] py-12 px-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-slate-800 rounded flex items-center justify-center">
-                 <Bot className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center border border-slate-800">
+                 <Bot className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-white">ApiScan</span>
+              <span className="font-bold text-white text-lg">ApiScan</span>
            </div>
            
            <div className="text-slate-500 text-sm">
@@ -582,9 +664,11 @@ export default function LandingPage() {
            </div>
 
            <div className="flex gap-6">
-              <Github className="w-5 h-5 text-slate-500 hover:text-white cursor-pointer transition-colors" />
-              <Twitter className="w-5 h-5 text-slate-500 hover:text-white cursor-pointer transition-colors" />
-              <Linkedin className="w-5 h-5 text-slate-500 hover:text-white cursor-pointer transition-colors" />
+              {[Github, Twitter, Linkedin].map((Icon, i) => (
+                <a key={i} href="#" className="text-slate-500 hover:text-white transition-colors p-2 hover:bg-slate-900 rounded-full">
+                  <Icon className="w-5 h-5" />
+                </a>
+              ))}
            </div>
         </div>
       </footer>
