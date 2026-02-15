@@ -253,13 +253,14 @@ import {
   Twitter, 
   Linkedin, 
   Radar, 
-  Code2,
-  Workflow,
-  Search,
-  Sparkles,
-  Activity,
-  Terminal,
-  Server
+  Code2, 
+  Workflow, 
+  Search, 
+  Sparkles, 
+  Activity, 
+  Terminal, 
+  Server,
+  Lock // 👈 Added this missing import
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -278,7 +279,7 @@ export default function LandingPage() {
     { label: 'Features', href: '#features' },
     { label: 'How it Works', href: '#how-it-works' },
     { label: 'Pricing', href: '#pricing' },
-    { label: 'Docs', href: '/docs' }, // ✅ Points to /docs page
+    { label: 'Docs', href: '/docs' }, 
   ];
 
   return (
