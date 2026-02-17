@@ -323,7 +323,7 @@ export default function ProjectsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter projects client-side for immediate feedback
+  // Filter projects client-side
   const filteredProjects = projects.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -354,7 +354,6 @@ export default function ProjectsPage() {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-4">
-            {/* Global Search */}
             <div className="hidden md:flex relative w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                 <input 
@@ -364,13 +363,11 @@ export default function ProjectsPage() {
                 />
             </div>
 
-            {/* Notifications */}
             <button className="p-2 text-slate-400 hover:text-white transition-colors relative">
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-[#020617]" />
             </button>
 
-            {/* Profile Dropdown */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-2 ring-slate-800 hover:ring-slate-700 transition-all">
@@ -426,7 +423,6 @@ export default function ProjectsPage() {
             transition={{ duration: 0.4, delay: 0.1 }}
             className="flex items-center gap-3"
           >
-             {/* Filter Input */}
              <div className="relative hidden sm:block w-64">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
                 <Input 
@@ -437,7 +433,6 @@ export default function ProjectsPage() {
                 />
              </div>
 
-             {/* View Toggle */}
             <div className="hidden sm:flex items-center p-1 bg-slate-900 border border-slate-800 rounded-lg">
                 <button 
                   onClick={() => setViewMode('grid')}
@@ -473,7 +468,6 @@ export default function ProjectsPage() {
           ) : (
             <>
               {projects.length === 0 ? (
-                // EMPTY STATE
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -492,26 +486,27 @@ export default function ProjectsPage() {
                   </Button>
                 </motion.div>
               ) : filteredProjects.length === 0 ? (
-                 // NO SEARCH RESULTS
                  <div className="text-center py-20">
                     <p className="text-slate-500">No projects match "{searchQuery}"</p>
                     <Button variant="link" onClick={() => setSearchQuery('')} className="text-blue-400">Clear filter</Button>
                  </div>
               ) : (
-                // GRID/LIST VIEW
                 <div className={`
                     grid gap-6 
                     ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}
                 `}>
                   {filteredProjects.map((project, index) => (
-                    <motion.div
-                      key={project.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.05 }}
-                    >
-                      <ProjectCard project={project} />
-                    </motion.div>
+                    // 👇 THIS IS THE FIX: Wrapped in Link
+                    <Link key={project.id} href={`/projects/${project.id}`} className="block h-full">
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                          className="h-full"
+                        >
+                          <ProjectCard project={project} />
+                        </motion.div>
+                    </Link>
                   ))}
                 </div>
               )}
