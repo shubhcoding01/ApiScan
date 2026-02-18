@@ -239,6 +239,7 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 
+// 1. Update Interface to match what your Backend might send (or default to 0)
 interface ProjectCardProps {
   project: {
     id: string;
@@ -246,6 +247,9 @@ interface ProjectCardProps {
     description?: string;
     base_url?: string;
     created_at: string;
+    // Optional fields - if your backend sends them later
+    total_runs?: number;
+    reliability_score?: number; 
   };
 }
 
@@ -256,6 +260,10 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     month: 'short',
     day: 'numeric',
   });
+
+  // 2. Use Real Data or Default to 0/Null
+  const runCount = project.total_runs || 0;
+  const healthScore = project.reliability_score || 0;
 
   return (
     <div className="group relative flex flex-col h-full rounded-2xl border border-slate-800 bg-[#0B1120] p-5 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-900/10 transition-all duration-300">
@@ -288,7 +296,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           </div>
         </div>
 
-        {/* Menu (Stop propagation to prevent card click when clicking menu) */}
+        {/* Menu */}
         <div onClick={(e) => e.preventDefault()}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -307,19 +315,25 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         </div>
       </div>
 
-      {/* --- MIDDLE: Stats Grid (Mini Dashboard) --- */}
+      {/* --- MIDDLE: Stats Grid (REAL DATA) --- */}
       <div className="relative z-10 grid grid-cols-2 gap-2 mb-4">
         <div className="p-2.5 rounded-lg bg-slate-900/50 border border-slate-800/50">
             <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <ShieldCheck className="w-3 h-3 text-blue-400" /> Health
             </div>
-            <div className="text-sm font-bold text-slate-200">98%</div>
+            {/* Logic: If score is 0, show 'N/A', otherwise show percentage */}
+            <div className={`text-sm font-bold ${healthScore > 0 ? 'text-slate-200' : 'text-slate-600'}`}>
+               {healthScore > 0 ? `${healthScore}%` : 'N/A'}
+            </div>
         </div>
         <div className="p-2.5 rounded-lg bg-slate-900/50 border border-slate-800/50">
             <div className="text-xs text-slate-500 flex items-center gap-1.5 mb-1">
                 <Activity className="w-3 h-3 text-purple-400" /> Scans
             </div>
-            <div className="text-sm font-bold text-slate-200">24</div>
+            {/* Logic: Show real count */}
+            <div className={`text-sm font-bold ${runCount > 0 ? 'text-slate-200' : 'text-slate-600'}`}>
+                {runCount}
+            </div>
         </div>
       </div>
 
@@ -329,14 +343,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         {/* Base URL */}
         <div className="flex items-center gap-2 text-xs text-slate-400 font-mono bg-black/20 p-1.5 rounded border border-white/5 truncate">
           <Globe className="w-3 h-3 text-slate-600 flex-shrink-0" />
-          <span className="truncate">{project.base_url || 'https://api.example.com'}</span>
+          <span className="truncate">{project.base_url || 'https://...'}</span>
         </div>
 
         {/* Footer Meta */}
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-1 text-xs text-slate-500">
             <Clock className="w-3 h-3" />
-            <span>Updated {formattedDate}</span>
+            <span>Created {formattedDate}</span>
           </div>
           
           <div className="text-xs font-medium text-blue-400 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">
