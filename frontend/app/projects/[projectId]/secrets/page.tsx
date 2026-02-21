@@ -396,7 +396,6 @@ export default function SecretsPage() {
         <PageHeader
           title="Secrets Vault"
           description="Securely store API keys and tokens. These are encrypted via AES-256 and injected into the test runner only at runtime."
-          className="mb-0 border-none pb-0"
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
