@@ -1049,6 +1049,592 @@
 //   );
 // }
 
+
+// 'use client';
+
+// import { useState, useEffect, useCallback, useMemo } from 'react';
+// import { useParams, useRouter } from 'next/navigation';
+// import Link from 'next/link';
+// import { motion } from 'framer-motion';
+// import {
+//   FileJson,
+//   CheckCircle2,
+//   AlertCircle,
+//   Clock,
+//   Loader2,
+//   Download,
+//   Sparkles,
+//   Bot,
+//   ChevronRight,
+//   Search,
+//   Bell,
+//   UploadCloud,
+//   Code2,
+//   Eye,
+//   Filter,
+//   Calendar,
+//   Zap,
+//   User,
+//   Settings,
+//   LogOut
+// } from 'lucide-react';
+
+// import api from '@/lib/api';
+// import { getToken } from '@/lib/auth';
+// import { ApiVersion } from '@/lib/types';
+// import PageHeader from '@/components/layout/PageHeader';
+// import UploadSpecForm from '@/components/specs/UploadSpecForm';
+// import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+// import { Button } from '@/components/ui/button';
+// import { Textarea } from '@/components/ui/textarea';
+// import { Input } from '@/components/ui/input';
+// import { Badge } from '@/components/ui/badge';
+// import { 
+//   DropdownMenu, 
+//   DropdownMenuContent, 
+//   DropdownMenuItem, 
+//   DropdownMenuLabel, 
+//   DropdownMenuSeparator, 
+//   DropdownMenuTrigger 
+// } from '@/components/ui/dropdown-menu';
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from '@/components/ui/select';
+
+// // --- STATUS CONFIGURATION ---
+// const STATUS_CONFIG = {
+//   READY: {
+//     icon: CheckCircle2,
+//     color: 'text-emerald-400',
+//     bgColor: 'bg-emerald-500/10',
+//     borderColor: 'border-emerald-500/20',
+//     label: 'Ready'
+//   },
+//   FAILED: {
+//     icon: AlertCircle,
+//     color: 'text-red-400',
+//     bgColor: 'bg-red-500/10',
+//     borderColor: 'border-red-500/20',
+//     label: 'Failed'
+//   },
+//   PARSING: {
+//     icon: Loader2,
+//     color: 'text-blue-400',
+//     bgColor: 'bg-blue-500/10',
+//     borderColor: 'border-blue-500/20',
+//     label: 'Parsing',
+//     spin: true
+//   },
+//   PENDING: {
+//     icon: Clock,
+//     color: 'text-amber-400',
+//     bgColor: 'bg-amber-500/10',
+//     borderColor: 'border-amber-500/20',
+//     label: 'Pending'
+//   }
+// } as const;
+
+// type StatusType = keyof typeof STATUS_CONFIG;
+
+// export default function SpecsPage() {
+//   const params = useParams();
+//   const router = useRouter();
+//   const projectId = params.projectId as string;
+
+//   // --- STATE ---
+//   const [specs, setSpecs] = useState<ApiVersion[]>([]);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+//   // AI State
+//   const [aiPrompt, setAiPrompt] = useState('');
+//   const [isGenerating, setIsGenerating] = useState(false);
+
+//   // --- AUTH GUARD ---
+//   useEffect(() => {
+//     const token = getToken();
+//     if (!token) {
+//       router.replace('/login');
+//       return;
+//     }
+//     api.get('/auth/me').catch(() => router.replace('/login'));
+//   }, [router]);
+
+//   // --- FETCH SPECS ---
+//   const fetchSpecs = useCallback(async () => {
+//     try {
+//       setIsLoading(true);
+//       const { data } = await api.get(`/specs/${projectId}`);
+//       setSpecs(data);
+//     } catch (err) {
+//       console.error('Failed to load specs', err);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   }, [projectId]);
+
+//   useEffect(() => {
+//     fetchSpecs();
+//   }, [fetchSpecs]);
+
+//   // --- AI GENERATE HANDLER ---
+//   const handleAiGenerate = async () => {
+//     if (!aiPrompt.trim()) return;
+//     setIsGenerating(true);
+    
+//     try {
+//       await api.post(`/specs/${projectId}/generate`, { 
+//         description: aiPrompt 
+//       });
+      
+//       setAiPrompt('');
+//       await fetchSpecs();
+//       alert('✅ Swagger file generated successfully!');
+      
+//     } catch (err: any) {
+//       console.error('AI Generation Failed', err);
+//       alert('Failed to generate spec. Please try again.');
+//     } finally {
+//       setIsGenerating(false);
+//     }
+//   };
+
+//   // --- DOWNLOAD HANDLER ---
+//   const handleDownloadSpec = useCallback((spec: ApiVersion) => {
+//     if (!spec.spec_json) return;
+    
+//     const blob = new Blob(
+//       [JSON.stringify(spec.spec_json, null, 2)],
+//       { type: 'application/json' }
+//     );
+//     const url = URL.createObjectURL(blob);
+//     const a = document.createElement('a');
+//     a.href = url;
+//     a.download = `spec-${spec.version}.json`;
+//     a.click();
+//     URL.revokeObjectURL(url);
+//   }, []);
+
+//   // --- FILTERED SPECS ---
+//   const filteredSpecs = useMemo(() => {
+//     return specs.filter(spec => {
+//       const matchesSearch = spec.version.toLowerCase().includes(searchQuery.toLowerCase());
+//       const matchesStatus = statusFilter === 'all' || spec.status === statusFilter;
+//       return matchesSearch && matchesStatus;
+//     });
+//   }, [specs, searchQuery, statusFilter]);
+
+//   // --- STATS ---
+//   const stats = useMemo(() => {
+//     const total = specs.length;
+//     const ready = specs.filter(s => s.status === 'READY').length;
+//     const failed = specs.filter(s => s.status === 'FAILED').length;
+//     const parsing = specs.filter(s => s.status === 'PARSING').length;
+    
+//     return { total, ready, failed, parsing };
+//   }, [specs]);
+
+//   return (
+//     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-blue-500/30">
+      
+//       {/* --- NAVBAR --- */}
+//       <nav className="sticky top-0 z-50 border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl">
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+//           <div className="flex h-16 items-center justify-between">
+//             {/* Left - Breadcrumbs */}
+//             <div className="flex items-center gap-2 text-sm">
+//               <Link 
+//                 href="/projects" 
+//                 className="flex items-center gap-2 hover:opacity-80 transition-opacity group"
+//               >
+//                 <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+//                   <Bot className="h-5 w-5 text-white" />
+//                   <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20" />
+//                 </div>
+//                 <span className="font-bold text-white hidden sm:block">ApiScan</span>
+//               </Link>
+//               <ChevronRight className="w-4 h-4 text-slate-600" />
+//               <Link 
+//                 href={`/projects/${projectId}`} 
+//                 className="hover:text-white text-slate-400 transition-colors font-medium"
+//               >
+//                 Project
+//               </Link>
+//               <ChevronRight className="w-4 h-4 text-slate-600" />
+//               <span className="text-white font-medium">Specifications</span>
+//             </div>
+
+//             {/* Right - Actions */}
+//             <div className="flex items-center gap-4">
+//               <div className="relative hidden md:block w-64">
+//                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+//                 <Input 
+//                   placeholder="Search specs..." 
+//                   className="pl-9 bg-slate-900/50 border-slate-800 h-9 focus:border-blue-500/50 transition-colors rounded-full text-sm" 
+//                   value={searchQuery}
+//                   onChange={(e) => setSearchQuery(e.target.value)}
+//                 />
+//               </div>
+              
+//               <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
+//                 <Bell className="w-5 h-5" />
+//               </button>
+              
+//               <DropdownMenu>
+//                 <DropdownMenuTrigger asChild>
+//                   <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-2 ring-slate-800 hover:ring-slate-700 transition-all p-0">
+//                     <Avatar className="h-8 w-8">
+//                       <AvatarImage src="/placeholder-user.jpg" />
+//                       <AvatarFallback className="bg-slate-800 text-slate-400">JD</AvatarFallback>
+//                     </Avatar>
+//                   </Button>
+//                 </DropdownMenuTrigger>
+//                 <DropdownMenuContent className="w-56 bg-[#0B1120] border-slate-800 text-slate-300" align="end">
+//                   <DropdownMenuLabel className="text-white font-normal">
+//                     <div className="flex flex-col space-y-1">
+//                       <p className="text-sm font-medium leading-none text-white">John Doe</p>
+//                       <p className="text-xs leading-none text-slate-500">john@example.com</p>
+//                     </div>
+//                   </DropdownMenuLabel>
+//                   <DropdownMenuSeparator className="bg-slate-800" />
+//                   <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer focus:bg-slate-800">
+//                     <User className="mr-2 h-4 w-4" /> Profile
+//                   </DropdownMenuItem>
+//                   <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer focus:bg-slate-800">
+//                     <Settings className="mr-2 h-4 w-4" /> Settings
+//                   </DropdownMenuItem>
+//                   <DropdownMenuSeparator className="bg-slate-800" />
+//                   <DropdownMenuItem className="hover:bg-red-900/20 cursor-pointer text-red-400 focus:bg-red-900/20 focus:text-red-400">
+//                     <LogOut className="mr-2 h-4 w-4" /> Log out
+//                   </DropdownMenuItem>
+//                 </DropdownMenuContent>
+//               </DropdownMenu>
+//             </div>
+//           </div>
+//         </div>
+//       </nav>
+
+//       {/* --- MAIN CONTENT --- */}
+//       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        
+//         {/* Header with Stats */}
+//         <motion.div 
+//           initial={{ opacity: 0, y: 20 }}
+//           animate={{ opacity: 1, y: 0 }}
+//           transition={{ duration: 0.5 }}
+//           className="space-y-6"
+//         >
+//           <PageHeader
+//             title="API Specifications"
+//             description="Manage your API definitions. Upload a file or let AI write the Swagger for you."
+//             className="mb-0 border-none pb-0"
+//           />
+
+//           {/* Stats Cards */}
+//           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+//             <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
+//               <CardContent className="pt-6 pb-5">
+//                 <div className="flex items-center justify-between">
+//                   <div>
+//                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Specs</p>
+//                     <p className="text-3xl font-bold text-white">
+//                       {stats.total}
+//                     </p>
+//                   </div>
+//                   <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+//                     <FileJson className="w-6 h-6 text-blue-400" />
+//                   </div>
+//                 </div>
+//               </CardContent>
+//             </Card>
+
+//             <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
+//               <CardContent className="pt-6 pb-5">
+//                 <div className="flex items-center justify-between">
+//                   <div>
+//                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ready</p>
+//                     <p className="text-3xl font-bold text-emerald-400">
+//                       {stats.ready}
+//                     </p>
+//                   </div>
+//                   <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+//                     <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+//                   </div>
+//                 </div>
+//               </CardContent>
+//             </Card>
+
+//             <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
+//               <CardContent className="pt-6 pb-5">
+//                 <div className="flex items-center justify-between">
+//                   <div>
+//                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Processing</p>
+//                     <p className="text-3xl font-bold text-blue-400">
+//                       {stats.parsing}
+//                     </p>
+//                   </div>
+//                   <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+//                     <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+//                   </div>
+//                 </div>
+//               </CardContent>
+//             </Card>
+
+//             <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
+//               <CardContent className="pt-6 pb-5">
+//                 <div className="flex items-center justify-between">
+//                   <div>
+//                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Failed</p>
+//                     <p className="text-3xl font-bold text-red-400">
+//                       {stats.failed}
+//                     </p>
+//                   </div>
+//                   <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+//                     <AlertCircle className="w-6 h-6 text-red-400" />
+//                   </div>
+//                 </div>
+//               </CardContent>
+//             </Card>
+//           </div>
+//         </motion.div>
+
+//         {/* Main Content Grid */}
+//         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+//           {/* LEFT COLUMN: ACTIONS */}
+//           <motion.div 
+//             initial={{ opacity: 0, x: -20 }}
+//             animate={{ opacity: 1, x: 0 }}
+//             transition={{ duration: 0.5, delay: 0.2 }}
+//             className="lg:col-span-1 space-y-6"
+//           >
+//             {/* AI Generator Card */}
+//             <Card className="bg-gradient-to-br from-[#0f172a] to-[#020617] border-blue-500/30 shadow-xl overflow-hidden relative group">
+//               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_50%)]" />
+              
+//               <CardHeader className="pb-3 relative z-10">
+//                 <div className="flex items-center justify-between">
+//                   <CardTitle className="flex items-center gap-2 text-white text-lg font-semibold">
+//                     <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+//                       <Sparkles className="w-4 h-4 text-blue-400" />
+//                     </div>
+//                     Generate with AI
+//                   </CardTitle>
+//                 </div>
+//                 <CardDescription className="text-slate-400 text-xs mt-2 leading-relaxed">
+//                   Describe your API features, and our AI will build a complete OpenAPI 3.0 specification.
+//                 </CardDescription>
+//               </CardHeader>
+              
+//               <CardContent className="space-y-4 relative z-10">
+//                 <Textarea 
+//                   placeholder="e.g., A library management API with CRUD for books, authors, and JWT authentication..."
+//                   className="bg-slate-950/50 border-slate-800 min-h-[140px] text-sm focus:border-blue-500/50 placeholder:text-slate-600 resize-none"
+//                   value={aiPrompt}
+//                   onChange={(e) => setAiPrompt(e.target.value)}
+//                 />
+                
+//                 <Button 
+//                   onClick={handleAiGenerate} 
+//                   disabled={isGenerating || !aiPrompt.trim()}
+//                   className="w-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30 transition-all font-medium h-10"
+//                 >
+//                   {isGenerating ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+//                       Generating...
+//                     </>
+//                   ) : (
+//                     <>
+//                       <Sparkles className="w-4 h-4 mr-2" />
+//                       Generate Specification
+//                     </>
+//                   )}
+//                 </Button>
+//               </CardContent>
+//             </Card>
+
+//             {/* Manual Upload Section */}
+//             <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-xl">
+//               <CardHeader className="pb-4">
+//                 <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
+//                   <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
+//                     <UploadCloud className="w-4 h-4 text-slate-400" />
+//                   </div>
+//                   Manual Upload
+//                 </CardTitle>
+//                 <CardDescription className="text-xs text-slate-500">
+//                   Upload your existing Swagger/OpenAPI JSON or YAML file.
+//                 </CardDescription>
+//               </CardHeader>
+//               <CardContent>
+//                 <UploadSpecForm projectId={projectId} onSuccess={fetchSpecs} />
+//               </CardContent>
+//             </Card>
+//           </motion.div>
+
+//           {/* RIGHT COLUMN: SPECS LIST */}
+//           <motion.div 
+//             initial={{ opacity: 0, x: 20 }}
+//             animate={{ opacity: 1, x: 0 }}
+//             transition={{ duration: 0.5, delay: 0.3 }}
+//             className="lg:col-span-2"
+//           >
+//             <Card className="border-slate-800 bg-slate-900/30 backdrop-blur-sm min-h-[600px] shadow-xl flex flex-col">
+//               <CardHeader className="border-b border-slate-800/50 pb-4 bg-slate-900/50">
+//                 <div className="flex items-center justify-between flex-wrap gap-4">
+//                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-white">
+//                     <FileJson className="w-5 h-5 text-slate-400" />
+//                     Version History
+//                   </CardTitle>
+                  
+//                   {/* Filter Controls */}
+//                   <div className="flex items-center gap-2">
+//                     <Select value={statusFilter} onValueChange={setStatusFilter}>
+//                       <SelectTrigger className="w-[140px] h-9 bg-slate-950 border-slate-800 text-sm text-slate-300">
+//                         <Filter className="w-4 h-4 mr-2 text-slate-500" />
+//                         <SelectValue placeholder="Filter Status" />
+//                       </SelectTrigger>
+//                       <SelectContent className="bg-[#0B1120] border-slate-800 text-slate-300">
+//                         <SelectItem value="all" className="focus:bg-slate-800">All Statuses</SelectItem>
+//                         <SelectItem value="READY" className="focus:bg-slate-800">Ready</SelectItem>
+//                         <SelectItem value="PARSING" className="focus:bg-slate-800">Parsing</SelectItem>
+//                         <SelectItem value="FAILED" className="focus:bg-slate-800">Failed</SelectItem>
+//                       </SelectContent>
+//                     </Select>
+//                   </div>
+//                 </div>
+//               </CardHeader>
+
+//               <CardContent className="p-0 flex-1">
+//                 {isLoading ? (
+//                   <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-slate-500">
+//                     <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
+//                     <p className="text-sm font-medium">Loading history...</p>
+//                   </div>
+//                 ) : filteredSpecs.length === 0 ? (
+//                   <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
+//                     <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4 border border-slate-800">
+//                       <Code2 className="w-8 h-8 text-slate-600" />
+//                     </div>
+//                     <h3 className="text-lg font-semibold text-white mb-2">
+//                       {searchQuery || statusFilter !== 'all' ? 'No Matching Specs' : 'No Specs Found'}
+//                     </h3>
+//                     <p className="text-slate-500 text-sm max-w-xs mx-auto mb-6">
+//                       {searchQuery || statusFilter !== 'all' 
+//                         ? 'Try adjusting your search or filter criteria.'
+//                         : 'Upload an OpenAPI file or use the AI generator to start tracking versions.'}
+//                     </p>
+//                     {(searchQuery || statusFilter !== 'all') && (
+//                       <Button 
+//                         variant="outline" 
+//                         size="sm"
+//                         onClick={() => {
+//                           setSearchQuery('');
+//                           setStatusFilter('all');
+//                         }}
+//                         className="border-slate-700 hover:bg-slate-800 text-slate-300"
+//                       >
+//                         Clear Filters
+//                       </Button>
+//                     )}
+//                   </div>
+//                 ) : (
+//                   <div className="divide-y divide-slate-800/50">
+//                     {filteredSpecs.map((spec, index) => {
+//                       const statusConfig = STATUS_CONFIG[spec.status as StatusType] || STATUS_CONFIG.PENDING;
+//                       const StatusIcon = statusConfig.icon;
+                      
+//                       return (
+//                         <motion.div
+//                           initial={{ opacity: 0, y: 10 }}
+//                           animate={{ opacity: 1, y: 0 }}
+//                           transition={{ duration: 0.3, delay: index * 0.05 }}
+//                           key={spec.id}
+//                           className="group flex items-center justify-between p-5 hover:bg-slate-800/30 transition-colors"
+//                         >
+//                           {/* Left Info */}
+//                           <div className="flex items-center gap-4 flex-1 min-w-0">
+//                             <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 group-hover:border-slate-700 transition-colors shrink-0">
+//                               <FileJson className="w-5 h-5 text-slate-400 group-hover:text-blue-400" />
+//                             </div>
+
+//                             <div className="min-w-0 flex-1">
+//                               <div className="flex items-center gap-3 mb-1">
+//                                 <span className="font-bold text-white tracking-wide truncate">
+//                                   {spec.version}
+//                                 </span>
+//                                 <Badge 
+//                                   variant="outline" 
+//                                   className={`
+//                                     border px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider shrink-0
+//                                     ${statusConfig.color} ${statusConfig.borderColor} ${statusConfig.bgColor}
+//                                   `}
+//                                 >
+//                                   <StatusIcon className={`w-3 h-3 mr-1 ${statusConfig.spin ? 'animate-spin' : ''}`} />
+//                                   {statusConfig.label}
+//                                 </Badge>
+//                               </div>
+
+//                               <p className="text-xs text-slate-500 flex items-center gap-1.5">
+//                                 <Calendar className="w-3 h-3 shrink-0" />
+//                                 <span className="truncate">
+//                                   Uploaded {new Date(spec.created_at).toLocaleDateString('en-US', {
+//                                     month: 'short',
+//                                     day: 'numeric',
+//                                     year: 'numeric'
+//                                   })}
+//                                 </span>
+//                               </p>
+//                             </div>
+//                           </div>
+
+//                           {/* Right Actions */}
+//                           <div className="flex items-center gap-2 ml-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+//                             <Button
+//                               variant="ghost"
+//                               size="sm"
+//                               className="text-slate-400 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
+//                               title="View details"
+//                             >
+//                               <Eye className="w-4 h-4" />
+//                             </Button>
+
+//                             <div className="h-4 w-px bg-slate-800 mx-1" />
+
+//                             <Button
+//                               variant="ghost"
+//                               size="sm"
+//                               disabled={!spec.spec_json}
+//                               title={spec.spec_json ? 'Download JSON' : 'Spec not parsed yet'}
+//                               className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 disabled:opacity-40 disabled:cursor-not-allowed h-8 px-3"
+//                               onClick={() => handleDownloadSpec(spec)}
+//                             >
+//                               <Download className="w-4 h-4 mr-2" />
+//                               JSON
+//                             </Button>
+//                           </div>
+//                         </motion.div>
+//                       );
+//                     })}
+//                   </div>
+//                 )}
+//               </CardContent>
+//             </Card>
+//           </motion.div>
+//         </div>
+//       </main>
+//     </div>
+//   );
+// }
+
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -1240,10 +1826,10 @@ export default function SpecsPage() {
   }, [specs]);
 
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-black text-slate-100 font-sans selection:bg-blue-500/20">
       
       {/* --- NAVBAR --- */}
-      <nav className="sticky top-0 z-50 border-b border-white/5 bg-[#020617]/80 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Left - Breadcrumbs */}
@@ -1252,64 +1838,75 @@ export default function SpecsPage() {
                 href="/projects" 
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity group"
               >
-                <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                  <Bot className="h-5 w-5 text-white" />
-                  <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/20" />
-                </div>
+                <motion.div 
+                  className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Bot className="h-5 w-5 text-white relative z-10" />
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-lg"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+                  />
+                </motion.div>
                 <span className="font-bold text-white hidden sm:block">ApiScan</span>
               </Link>
-              <ChevronRight className="w-4 h-4 text-slate-600" />
+              <ChevronRight className="w-4 h-4 text-slate-700" />
               <Link 
                 href={`/projects/${projectId}`} 
-                className="hover:text-white text-slate-400 transition-colors font-medium"
+                className="hover:text-white text-slate-500 transition-colors font-medium"
               >
                 Project
               </Link>
-              <ChevronRight className="w-4 h-4 text-slate-600" />
+              <ChevronRight className="w-4 h-4 text-slate-700" />
               <span className="text-white font-medium">Specifications</span>
             </div>
 
             {/* Right - Actions */}
             <div className="flex items-center gap-4">
               <div className="relative hidden md:block w-64">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-600" />
                 <Input 
                   placeholder="Search specs..." 
-                  className="pl-9 bg-slate-900/50 border-slate-800 h-9 focus:border-blue-500/50 transition-colors rounded-full text-sm" 
+                  className="pl-9 bg-slate-950 border-slate-900 h-9 focus:border-blue-500/50 transition-colors rounded-full text-sm" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               
-              <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
+              <motion.button 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative p-2 text-slate-500 hover:text-white transition-colors"
+              >
                 <Bell className="w-5 h-5" />
-              </button>
+              </motion.button>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-2 ring-slate-800 hover:ring-slate-700 transition-all p-0">
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full ring-2 ring-slate-900 hover:ring-slate-800 transition-all p-0">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src="/placeholder-user.jpg" />
-                      <AvatarFallback className="bg-slate-800 text-slate-400">JD</AvatarFallback>
+                      <AvatarFallback className="bg-slate-900 text-slate-500">JD</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-[#0B1120] border-slate-800 text-slate-300" align="end">
+                <DropdownMenuContent className="w-56 bg-slate-950 border-slate-900 text-slate-300" align="end">
                   <DropdownMenuLabel className="text-white font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-white">John Doe</p>
-                      <p className="text-xs leading-none text-slate-500">john@example.com</p>
+                      <p className="text-xs leading-none text-slate-600">john@example.com</p>
                     </div>
                   </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-slate-800" />
-                  <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer focus:bg-slate-800">
+                  <DropdownMenuSeparator className="bg-slate-900" />
+                  <DropdownMenuItem className="hover:bg-slate-900 cursor-pointer focus:bg-slate-900">
                     <User className="mr-2 h-4 w-4" /> Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-slate-800 cursor-pointer focus:bg-slate-800">
+                  <DropdownMenuItem className="hover:bg-slate-900 cursor-pointer focus:bg-slate-900">
                     <Settings className="mr-2 h-4 w-4" /> Settings
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-slate-800" />
-                  <DropdownMenuItem className="hover:bg-red-900/20 cursor-pointer text-red-400 focus:bg-red-900/20 focus:text-red-400">
+                  <DropdownMenuSeparator className="bg-slate-900" />
+                  <DropdownMenuItem className="hover:bg-red-950/20 cursor-pointer text-red-400 focus:bg-red-950/20 focus:text-red-400">
                     <LogOut className="mr-2 h-4 w-4" /> Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -1337,69 +1934,51 @@ export default function SpecsPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
-              <CardContent className="pt-6 pb-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Specs</p>
-                    <p className="text-3xl font-bold text-white">
-                      {stats.total}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                    <FileJson className="w-6 h-6 text-blue-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
-              <CardContent className="pt-6 pb-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ready</p>
-                    <p className="text-3xl font-bold text-emerald-400">
-                      {stats.ready}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
-              <CardContent className="pt-6 pb-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Processing</p>
-                    <p className="text-3xl font-bold text-blue-400">
-                      {stats.parsing}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                    <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-lg">
-              <CardContent className="pt-6 pb-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Failed</p>
-                    <p className="text-3xl font-bold text-red-400">
-                      {stats.failed}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-red-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {[
+              { label: 'Total Specs', value: stats.total, icon: FileJson, color: 'blue', delay: 0 },
+              { label: 'Ready', value: stats.ready, icon: CheckCircle2, color: 'emerald', delay: 0.1 },
+              { label: 'Processing', value: stats.parsing, icon: Loader2, color: 'blue', spin: true, delay: 0.2 },
+              { label: 'Failed', value: stats.failed, icon: AlertCircle, color: 'red', delay: 0.3 }
+            ].map((stat) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: stat.delay }}
+              >
+                <Card className="bg-slate-950 border-slate-900 backdrop-blur-sm shadow-lg hover:border-slate-800 transition-colors">
+                  <CardContent className="pt-6 pb-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{stat.label}</p>
+                        <p className={`text-3xl font-bold ${
+                          stat.color === 'blue' ? 'text-blue-400' :
+                          stat.color === 'emerald' ? 'text-emerald-400' :
+                          stat.color === 'red' ? 'text-red-400' : 'text-white'
+                        }`}>
+                          {stat.value}
+                        </p>
+                      </div>
+                      <motion.div 
+                        className={`w-12 h-12 rounded-xl border flex items-center justify-center ${
+                          stat.color === 'blue' ? 'bg-blue-500/10 border-blue-500/20' :
+                          stat.color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20' :
+                          stat.color === 'red' ? 'bg-red-500/10 border-red-500/20' : ''
+                        }`}
+                        whileHover={{ scale: 1.1, rotate: stat.spin ? 0 : 360 }}
+                        transition={{ duration: 0.6 }}
+                      >
+                        <stat.icon className={`w-6 h-6 ${
+                          stat.color === 'blue' ? 'text-blue-400' :
+                          stat.color === 'emerald' ? 'text-emerald-400' :
+                          stat.color === 'red' ? 'text-red-400' : ''
+                        } ${stat.spin ? 'animate-spin' : ''}`} />
+                      </motion.div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 
@@ -1414,19 +1993,23 @@ export default function SpecsPage() {
             className="lg:col-span-1 space-y-6"
           >
             {/* AI Generator Card */}
-            <Card className="bg-gradient-to-br from-[#0f172a] to-[#020617] border-blue-500/30 shadow-xl overflow-hidden relative group">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_50%)]" />
+            <Card className="bg-gradient-to-br from-slate-950 to-black border-blue-500/20 shadow-xl overflow-hidden relative group">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.05),transparent_50%)]" />
               
               <CardHeader className="pb-3 relative z-10">
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2 text-white text-lg font-semibold">
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center">
+                    <motion.div 
+                      className="w-8 h-8 rounded-lg bg-blue-500/20 border border-blue-500/30 flex items-center justify-center"
+                      whileHover={{ rotate: 360, scale: 1.1 }}
+                      transition={{ duration: 0.6 }}
+                    >
                       <Sparkles className="w-4 h-4 text-blue-400" />
-                    </div>
+                    </motion.div>
                     Generate with AI
                   </CardTitle>
                 </div>
-                <CardDescription className="text-slate-400 text-xs mt-2 leading-relaxed">
+                <CardDescription className="text-slate-500 text-xs mt-2 leading-relaxed">
                   Describe your API features, and our AI will build a complete OpenAPI 3.0 specification.
                 </CardDescription>
               </CardHeader>
@@ -1434,41 +2017,51 @@ export default function SpecsPage() {
               <CardContent className="space-y-4 relative z-10">
                 <Textarea 
                   placeholder="e.g., A library management API with CRUD for books, authors, and JWT authentication..."
-                  className="bg-slate-950/50 border-slate-800 min-h-[140px] text-sm focus:border-blue-500/50 placeholder:text-slate-600 resize-none"
+                  className="bg-black border-slate-900 min-h-[140px] text-sm focus:border-blue-500/50 placeholder:text-slate-700 resize-none"
                   value={aiPrompt}
                   onChange={(e) => setAiPrompt(e.target.value)}
                 />
                 
-                <Button 
-                  onClick={handleAiGenerate} 
-                  disabled={isGenerating || !aiPrompt.trim()}
-                  className="w-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30 transition-all font-medium h-10"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Generate Specification
-                    </>
-                  )}
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    onClick={handleAiGenerate} 
+                    disabled={isGenerating || !aiPrompt.trim()}
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30 transition-all font-medium h-10 relative overflow-hidden group"
+                  >
+                    <span className="relative z-10 flex items-center justify-center">
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Generate Specification
+                        </>
+                      )}
+                    </span>
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-600"
+                      initial={{ x: '-100%' }}
+                      whileHover={{ x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                  </Button>
+                </motion.div>
               </CardContent>
             </Card>
 
             {/* Manual Upload Section */}
-            <Card className="bg-slate-900/30 border-slate-800/50 backdrop-blur-sm shadow-xl">
+            <Card className="bg-slate-950 border-slate-900 backdrop-blur-sm shadow-xl">
               <CardHeader className="pb-4">
                 <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center">
-                    <UploadCloud className="w-4 h-4 text-slate-400" />
+                  <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center">
+                    <UploadCloud className="w-4 h-4 text-slate-500" />
                   </div>
                   Manual Upload
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
+                <CardDescription className="text-xs text-slate-600">
                   Upload your existing Swagger/OpenAPI JSON or YAML file.
                 </CardDescription>
               </CardHeader>
@@ -1485,26 +2078,26 @@ export default function SpecsPage() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="lg:col-span-2"
           >
-            <Card className="border-slate-800 bg-slate-900/30 backdrop-blur-sm min-h-[600px] shadow-xl flex flex-col">
-              <CardHeader className="border-b border-slate-800/50 pb-4 bg-slate-900/50">
+            <Card className="border-slate-900 bg-slate-950 backdrop-blur-sm min-h-[600px] shadow-xl flex flex-col">
+              <CardHeader className="border-b border-slate-900 pb-4 bg-slate-950">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <CardTitle className="flex items-center gap-2 text-lg font-semibold text-white">
-                    <FileJson className="w-5 h-5 text-slate-400" />
+                    <FileJson className="w-5 h-5 text-slate-500" />
                     Version History
                   </CardTitle>
                   
                   {/* Filter Controls */}
                   <div className="flex items-center gap-2">
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-[140px] h-9 bg-slate-950 border-slate-800 text-sm text-slate-300">
-                        <Filter className="w-4 h-4 mr-2 text-slate-500" />
+                      <SelectTrigger className="w-[140px] h-9 bg-black border-slate-900 text-sm text-slate-400">
+                        <Filter className="w-4 h-4 mr-2 text-slate-600" />
                         <SelectValue placeholder="Filter Status" />
                       </SelectTrigger>
-                      <SelectContent className="bg-[#0B1120] border-slate-800 text-slate-300">
-                        <SelectItem value="all" className="focus:bg-slate-800">All Statuses</SelectItem>
-                        <SelectItem value="READY" className="focus:bg-slate-800">Ready</SelectItem>
-                        <SelectItem value="PARSING" className="focus:bg-slate-800">Parsing</SelectItem>
-                        <SelectItem value="FAILED" className="focus:bg-slate-800">Failed</SelectItem>
+                      <SelectContent className="bg-slate-950 border-slate-900 text-slate-400">
+                        <SelectItem value="all" className="focus:bg-slate-900">All Statuses</SelectItem>
+                        <SelectItem value="READY" className="focus:bg-slate-900">Ready</SelectItem>
+                        <SelectItem value="PARSING" className="focus:bg-slate-900">Parsing</SelectItem>
+                        <SelectItem value="FAILED" className="focus:bg-slate-900">Failed</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -1513,39 +2106,41 @@ export default function SpecsPage() {
 
               <CardContent className="p-0 flex-1">
                 {isLoading ? (
-                  <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-slate-500">
+                  <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-slate-600">
                     <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
                     <p className="text-sm font-medium">Loading history...</p>
                   </div>
                 ) : filteredSpecs.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center p-8">
-                    <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4 border border-slate-800">
-                      <Code2 className="w-8 h-8 text-slate-600" />
+                    <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center mx-auto mb-4 border border-slate-900">
+                      <Code2 className="w-8 h-8 text-slate-700" />
                     </div>
                     <h3 className="text-lg font-semibold text-white mb-2">
                       {searchQuery || statusFilter !== 'all' ? 'No Matching Specs' : 'No Specs Found'}
                     </h3>
-                    <p className="text-slate-500 text-sm max-w-xs mx-auto mb-6">
+                    <p className="text-slate-600 text-sm max-w-xs mx-auto mb-6">
                       {searchQuery || statusFilter !== 'all' 
                         ? 'Try adjusting your search or filter criteria.'
                         : 'Upload an OpenAPI file or use the AI generator to start tracking versions.'}
                     </p>
                     {(searchQuery || statusFilter !== 'all') && (
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => {
-                          setSearchQuery('');
-                          setStatusFilter('all');
-                        }}
-                        className="border-slate-700 hover:bg-slate-800 text-slate-300"
-                      >
-                        Clear Filters
-                      </Button>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSearchQuery('');
+                            setStatusFilter('all');
+                          }}
+                          className="border-slate-800 hover:bg-slate-900 text-slate-400"
+                        >
+                          Clear Filters
+                        </Button>
+                      </motion.div>
                     )}
                   </div>
                 ) : (
-                  <div className="divide-y divide-slate-800/50">
+                  <div className="divide-y divide-slate-900">
                     {filteredSpecs.map((spec, index) => {
                       const statusConfig = STATUS_CONFIG[spec.status as StatusType] || STATUS_CONFIG.PENDING;
                       const StatusIcon = statusConfig.icon;
@@ -1556,13 +2151,16 @@ export default function SpecsPage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.05 }}
                           key={spec.id}
-                          className="group flex items-center justify-between p-5 hover:bg-slate-800/30 transition-colors"
+                          className="group flex items-center justify-between p-5 hover:bg-slate-900/50 transition-colors"
                         >
                           {/* Left Info */}
                           <div className="flex items-center gap-4 flex-1 min-w-0">
-                            <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 group-hover:border-slate-700 transition-colors shrink-0">
-                              <FileJson className="w-5 h-5 text-slate-400 group-hover:text-blue-400" />
-                            </div>
+                            <motion.div 
+                              className="p-3 bg-slate-950 rounded-xl border border-slate-900 group-hover:border-slate-800 transition-colors shrink-0"
+                              whileHover={{ scale: 1.05 }}
+                            >
+                              <FileJson className="w-5 h-5 text-slate-500 group-hover:text-blue-400 transition-colors" />
+                            </motion.div>
 
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-3 mb-1">
@@ -1581,7 +2179,7 @@ export default function SpecsPage() {
                                 </Badge>
                               </div>
 
-                              <p className="text-xs text-slate-500 flex items-center gap-1.5">
+                              <p className="text-xs text-slate-600 flex items-center gap-1.5">
                                 <Calendar className="w-3 h-3 shrink-0" />
                                 <span className="truncate">
                                   Uploaded {new Date(spec.created_at).toLocaleDateString('en-US', {
@@ -1596,28 +2194,32 @@ export default function SpecsPage() {
 
                           {/* Right Actions */}
                           <div className="flex items-center gap-2 ml-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-slate-400 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
-                              title="View details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-slate-500 hover:text-white hover:bg-slate-900 h-8 w-8 p-0"
+                                title="View details"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                            </motion.div>
 
-                            <div className="h-4 w-px bg-slate-800 mx-1" />
+                            <div className="h-4 w-px bg-slate-900 mx-1" />
 
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={!spec.spec_json}
-                              title={spec.spec_json ? 'Download JSON' : 'Spec not parsed yet'}
-                              className="text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 disabled:opacity-40 disabled:cursor-not-allowed h-8 px-3"
-                              onClick={() => handleDownloadSpec(spec)}
-                            >
-                              <Download className="w-4 h-4 mr-2" />
-                              JSON
-                            </Button>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={!spec.spec_json}
+                                title={spec.spec_json ? 'Download JSON' : 'Spec not parsed yet'}
+                                className="text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 disabled:opacity-40 disabled:cursor-not-allowed h-8 px-3"
+                                onClick={() => handleDownloadSpec(spec)}
+                              >
+                                <Download className="w-4 h-4 mr-2" />
+                                JSON
+                              </Button>
+                            </motion.div>
                           </div>
                         </motion.div>
                       );
