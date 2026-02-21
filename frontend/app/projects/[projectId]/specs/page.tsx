@@ -1661,7 +1661,8 @@ import {
   Zap,
   User,
   Settings,
-  LogOut
+  LogOut,
+  LucideIcon
 } from 'lucide-react';
 
 import api from '@/lib/api';
@@ -1809,8 +1810,8 @@ export default function SpecsPage() {
   // --- FILTERED SPECS ---
   const filteredSpecs = useMemo(() => {
     return specs.filter(spec => {
-      const matchesSearch = spec.version.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || spec.status === statusFilter;
+      const matchesSearch = spec.version?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false;
+      const matchesStatus = statusFilter === 'all' || (spec.status && spec.status === statusFilter);
       return matchesSearch && matchesStatus;
     });
   }, [specs, searchQuery, statusFilter]);
@@ -1818,9 +1819,9 @@ export default function SpecsPage() {
   // --- STATS ---
   const stats = useMemo(() => {
     const total = specs.length;
-    const ready = specs.filter(s => s.status === 'READY').length;
-    const failed = specs.filter(s => s.status === 'FAILED').length;
-    const parsing = specs.filter(s => s.status === 'PARSING').length;
+    const ready = specs.filter(s => s.status === 'READY' as any).length;
+    const failed = specs.filter(s => s.status === 'FAILED' as any).length;
+    const parsing = specs.filter(s => s.status === 'PARSING' as any).length;
     
     return { total, ready, failed, parsing };
   }, [specs]);
@@ -1926,11 +1927,10 @@ export default function SpecsPage() {
           transition={{ duration: 0.5 }}
           className="space-y-6"
         >
-          <PageHeader
-            title="API Specifications"
-            description="Manage your API definitions. Upload a file or let AI write the Swagger for you."
-            className="mb-0 border-none pb-0"
-          />
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">API Specifications</h1>
+            <p className="text-slate-400">Manage your API definitions. Upload a file or let AI write the Swagger for you.</p>
+          </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -2142,8 +2142,9 @@ export default function SpecsPage() {
                 ) : (
                   <div className="divide-y divide-slate-900">
                     {filteredSpecs.map((spec, index) => {
-                      const statusConfig = STATUS_CONFIG[spec.status as StatusType] || STATUS_CONFIG.PENDING;
-                      const StatusIcon = statusConfig.icon;
+                      const statusKey = (spec.status || 'PENDING') as StatusType;
+                      const statusConfig = STATUS_CONFIG[statusKey] || STATUS_CONFIG.PENDING;
+                      const StatusIcon = statusConfig.icon as LucideIcon;
                       
                       return (
                         <motion.div
