@@ -108,126 +108,200 @@
 //   );
 // }
 
+// 'use client';
+
+// import { useState } from 'react';
+// import {
+//   Trash2,
+//   Copy,
+//   Check,
+//   EyeOff,
+//   Key,
+// } from 'lucide-react';
+// import { Secret } from '@/lib/types';
+
+// interface SecretTableProps {
+//   secrets: Secret[];
+//   onDelete: (id: string) => void;
+//   isDeleting?: boolean;
+// }
+
+// export default function SecretTable({
+//   secrets,
+//   onDelete,
+//   isDeleting = false,
+// }: SecretTableProps) {
+//   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+//   const handleCopy = async (text: string, id: string) => {
+//     try {
+//       await navigator.clipboard.writeText(text);
+//       setCopiedId(id);
+//       setTimeout(() => setCopiedId(null), 2000);
+//     } catch {
+//       alert('Failed to copy to clipboard');
+//     }
+//   };
+
+//   /* ---------------- Empty State ---------------- */
+//   if (secrets.length === 0) {
+//     return (
+//       <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/30 text-center">
+//         <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
+//           <Key className="w-6 h-6 text-zinc-500" />
+//         </div>
+//         <h3 className="text-lg font-medium text-white">
+//           No Secrets Added
+//         </h3>
+//         <p className="text-zinc-500 text-sm max-w-sm mt-1">
+//           Add API keys (for example <code className="text-blue-400">OPENAI_API_KEY</code>) so the AI runner can authenticate.
+//         </p>
+//       </div>
+//     );
+//   }
+
+//   /* ---------------- Table ---------------- */
+//   return (
+//     <div className="border border-zinc-800 rounded-xl overflow-hidden">
+//       <table className="w-full text-left text-sm">
+//         <thead className="bg-zinc-900/50 border-b border-zinc-800 text-zinc-400 font-medium">
+//           <tr>
+//             <th className="px-6 py-4">Variable Key</th>
+//             <th className="px-6 py-4">Value</th>
+//             <th className="px-6 py-4">Created</th>
+//             <th className="px-6 py-4 text-right">Actions</th>
+//           </tr>
+//         </thead>
+
+//         <tbody className="divide-y divide-zinc-800 bg-black/20">
+//           {secrets.map((secret) => (
+//             <tr
+//               key={secret.id}
+//               className="group hover:bg-zinc-900/40 transition-colors"
+//             >
+//               {/* KEY */}
+//               <td className="px-6 py-4 font-mono text-blue-400">
+//                 <div className="flex items-center gap-2">
+//                   {secret.key}
+//                   <button
+//                     aria-label="Copy key name"
+//                     onClick={() => handleCopy(secret.key, secret.id)}
+//                     className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-zinc-800"
+//                   >
+//                     {copiedId === secret.id ? (
+//                       <Check className="w-3.5 h-3.5 text-green-500" />
+//                     ) : (
+//                       <Copy className="w-3.5 h-3.5 text-zinc-500" />
+//                     )}
+//                   </button>
+//                 </div>
+//               </td>
+
+//               {/* MASKED VALUE */}
+//               <td className="px-6 py-4 font-mono text-zinc-500">
+//                 <div className="flex items-center gap-2">
+//                   <EyeOff className="w-4 h-4" />
+//                   {secret.value_masked}
+//                 </div>
+//               </td>
+
+//               {/* DATE */}
+//               <td className="px-6 py-4 text-zinc-400">
+//                 {new Date(secret.created_at).toLocaleDateString()}
+//               </td>
+
+//               {/* DELETE */}
+//               <td className="px-6 py-4 text-right">
+//                 <button
+//                   aria-label="Delete secret"
+//                   disabled={isDeleting}
+//                   onClick={() => {
+//                     if (
+//                       confirm(
+//                         'Are you sure you want to delete this secret? It will no longer be available to test runs.'
+//                       )
+//                     ) {
+//                       onDelete(secret.id);
+//                     }
+//                   }}
+//                   className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+//                 >
+//                   <Trash2 className="w-4 h-4" />
+//                 </button>
+//               </td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// }
+
+
+
 'use client';
 
-import { useState } from 'react';
-import {
-  Trash2,
-  Copy,
-  Check,
-  EyeOff,
-  Key,
-} from 'lucide-react';
+import { Key, Trash2, Calendar, Loader2 } from 'lucide-react';
 import { Secret } from '@/lib/types';
+import { Button } from '@/components/ui/button';
 
 interface SecretTableProps {
   secrets: Secret[];
   onDelete: (id: string) => void;
-  isDeleting?: boolean;
+  isDeleting: boolean;
 }
 
-export default function SecretTable({
-  secrets,
-  onDelete,
-  isDeleting = false,
-}: SecretTableProps) {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const handleCopy = async (text: string, id: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      alert('Failed to copy to clipboard');
-    }
-  };
-
-  /* ---------------- Empty State ---------------- */
+export default function SecretTable({ secrets, onDelete, isDeleting }: SecretTableProps) {
   if (secrets.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/30 text-center">
-        <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mb-4">
-          <Key className="w-6 h-6 text-zinc-500" />
+      <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-slate-800 rounded-xl bg-slate-900/20">
+        <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center mb-3">
+          <Key className="w-6 h-6 text-slate-500" />
         </div>
-        <h3 className="text-lg font-medium text-white">
-          No Secrets Added
-        </h3>
-        <p className="text-zinc-500 text-sm max-w-sm mt-1">
-          Add API keys (for example <code className="text-blue-400">OPENAI_API_KEY</code>) so the AI runner can authenticate.
-        </p>
+        <h3 className="text-white font-medium mb-1">No Secrets Found</h3>
+        <p className="text-slate-500 text-sm">Add your first environment variable to get started.</p>
       </div>
     );
   }
 
-  /* ---------------- Table ---------------- */
   return (
-    <div className="border border-zinc-800 rounded-xl overflow-hidden">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-zinc-900/50 border-b border-zinc-800 text-zinc-400 font-medium">
+    <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/30 shadow-inner">
+      <table className="w-full text-sm text-left">
+        <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px] font-bold">
           <tr>
-            <th className="px-6 py-4">Variable Key</th>
-            <th className="px-6 py-4">Value</th>
-            <th className="px-6 py-4">Created</th>
+            <th className="px-6 py-4">Key Name</th>
+            <th className="px-6 py-4">Added On</th>
             <th className="px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
-
-        <tbody className="divide-y divide-zinc-800 bg-black/20">
+        <tbody className="divide-y divide-slate-800/50">
           {secrets.map((secret) => (
-            <tr
-              key={secret.id}
-              className="group hover:bg-zinc-900/40 transition-colors"
-            >
-              {/* KEY */}
-              <td className="px-6 py-4 font-mono text-blue-400">
-                <div className="flex items-center gap-2">
-                  {secret.key}
-                  <button
-                    aria-label="Copy key name"
-                    onClick={() => handleCopy(secret.key, secret.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-zinc-800"
-                  >
-                    {copiedId === secret.id ? (
-                      <Check className="w-3.5 h-3.5 text-green-500" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5 text-zinc-500" />
-                    )}
-                  </button>
+            <tr key={secret.id} className="hover:bg-slate-800/30 transition-colors group">
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-slate-950 rounded border border-slate-800">
+                    <Key className="w-3.5 h-3.5 text-blue-400" />
+                  </div>
+                  <span className="font-mono font-medium text-slate-200">{secret.key_name}</span>
                 </div>
               </td>
-
-              {/* MASKED VALUE */}
-              <td className="px-6 py-4 font-mono text-zinc-500">
-                <div className="flex items-center gap-2">
-                  <EyeOff className="w-4 h-4" />
-                  {secret.value_masked}
+              <td className="px-6 py-4 text-slate-500">
+                <div className="flex items-center gap-2 text-xs">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {new Date(secret.created_at).toLocaleDateString()}
                 </div>
               </td>
-
-              {/* DATE */}
-              <td className="px-6 py-4 text-zinc-400">
-                {new Date(secret.created_at).toLocaleDateString()}
-              </td>
-
-              {/* DELETE */}
               <td className="px-6 py-4 text-right">
-                <button
-                  aria-label="Delete secret"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onDelete(secret.id)}
                   disabled={isDeleting}
-                  onClick={() => {
-                    if (
-                      confirm(
-                        'Are you sure you want to delete this secret? It will no longer be available to test runs.'
-                      )
-                    ) {
-                      onDelete(secret.id);
-                    }
-                  }}
-                  className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+                  className="text-slate-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all h-8 w-8 p-0"
+                  title="Delete Secret"
                 >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                </Button>
               </td>
             </tr>
           ))}
