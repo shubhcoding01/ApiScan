@@ -1350,7 +1350,6 @@ export default function BlueprintDetailsPage() {
                   <PageHeader 
                       title={summary}
                       description={`Generated on ${new Date(blueprint.created_at).toLocaleString()}`}
-                      className="mb-0 border-none pb-0"
                   />
               </div>
               
