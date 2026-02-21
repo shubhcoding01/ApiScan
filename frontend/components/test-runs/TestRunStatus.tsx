@@ -79,97 +79,143 @@
 // }
 
 
-import {
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  Clock,
-  AlertTriangle,
-} from 'lucide-react';
+// import {
+//   CheckCircle2,
+//   XCircle,
+//   Loader2,
+//   Clock,
+//   AlertTriangle,
+// } from 'lucide-react';
 
-/* Backend-aligned status values */
-export type RunStatus =
-  | 'PENDING'
-  | 'RUNNING'
-  | 'COMPLETED'
-  | 'FAILED'
-  | 'PASSED';
+// /* Backend-aligned status values */
+// export type RunStatus =
+//   | 'PENDING'
+//   | 'RUNNING'
+//   | 'COMPLETED'
+//   | 'FAILED'
+//   | 'PASSED';
+
+// interface TestRunStatusProps {
+//   status: string; // keep flexible for backend safety
+// }
+
+// /* Central config */
+// const STATUS_CONFIG: Record<
+//   RunStatus,
+//   {
+//     label: string;
+//     icon: any;
+//     style: string;
+//     animate?: boolean;
+//   }
+// > = {
+//   PASSED: {
+//     label: 'Passed',
+//     icon: CheckCircle2,
+//     style: 'bg-green-500/10 text-green-400 border-green-500/20',
+//   },
+//   COMPLETED: {
+//     label: 'Completed',
+//     icon: CheckCircle2,
+//     style: 'bg-green-500/10 text-green-400 border-green-500/20',
+//   },
+//   FAILED: {
+//     label: 'Failed',
+//     icon: XCircle,
+//     style: 'bg-red-500/10 text-red-400 border-red-500/20',
+//   },
+//   RUNNING: {
+//     label: 'Running',
+//     icon: Loader2,
+//     style: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+//     animate: true,
+//   },
+//   PENDING: {
+//     label: 'Pending',
+//     icon: Clock,
+//     style: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
+//   },
+// };
+
+// export default function TestRunStatus({ status }: TestRunStatusProps) {
+//   const normalized = status.toUpperCase() as RunStatus;
+//   const config = STATUS_CONFIG[normalized];
+
+//   const Icon = config?.icon || AlertTriangle;
+
+//   return (
+//     <div
+//       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+//         config?.style || 'bg-zinc-800 text-zinc-400 border-zinc-700'
+//       }`}
+//     >
+//       <Icon
+//         className={`w-3.5 h-3.5 ${
+//           config?.animate ? 'animate-spin' : ''
+//         }`}
+//       />
+
+//       <span>
+//         {config?.label ||
+//           status
+//             .toLowerCase()
+//             .replace(/_/g, ' ')
+//             .replace(/^\w/, (c) => c.toUpperCase())}
+//       </span>
+
+//       {/* Live pulse indicator for RUNNING */}
+//       {normalized === 'RUNNING' && (
+//         <span className="relative flex h-2 w-2 ml-1">
+//           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+//           <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+//         </span>
+//       )}
+//     </div>
+//   );
+// }
+
+
+'use client';
+
+import { CheckCircle2, XCircle, Clock, Loader2, AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface TestRunStatusProps {
-  status: string; // keep flexible for backend safety
+  status: string;
 }
 
-/* Central config */
-const STATUS_CONFIG: Record<
-  RunStatus,
-  {
-    label: string;
-    icon: any;
-    style: string;
-    animate?: boolean;
-  }
-> = {
-  PASSED: {
-    label: 'Passed',
-    icon: CheckCircle2,
-    style: 'bg-green-500/10 text-green-400 border-green-500/20',
-  },
-  COMPLETED: {
-    label: 'Completed',
-    icon: CheckCircle2,
-    style: 'bg-green-500/10 text-green-400 border-green-500/20',
-  },
-  FAILED: {
-    label: 'Failed',
-    icon: XCircle,
-    style: 'bg-red-500/10 text-red-400 border-red-500/20',
-  },
-  RUNNING: {
-    label: 'Running',
-    icon: Loader2,
-    style: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    animate: true,
-  },
-  PENDING: {
-    label: 'Pending',
-    icon: Clock,
-    style: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
-  },
-};
-
 export default function TestRunStatus({ status }: TestRunStatusProps) {
-  const normalized = status.toUpperCase() as RunStatus;
-  const config = STATUS_CONFIG[normalized];
-
-  const Icon = config?.icon || AlertTriangle;
-
-  return (
-    <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-        config?.style || 'bg-zinc-800 text-zinc-400 border-zinc-700'
-      }`}
-    >
-      <Icon
-        className={`w-3.5 h-3.5 ${
-          config?.animate ? 'animate-spin' : ''
-        }`}
-      />
-
-      <span>
-        {config?.label ||
-          status
-            .toLowerCase()
-            .replace(/_/g, ' ')
-            .replace(/^\w/, (c) => c.toUpperCase())}
-      </span>
-
-      {/* Live pulse indicator for RUNNING */}
-      {normalized === 'RUNNING' && (
-        <span className="relative flex h-2 w-2 ml-1">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
-        </span>
-      )}
-    </div>
-  );
+  switch (status.toUpperCase()) {
+    case 'PASSED':
+      return (
+        <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 gap-1.5 px-2.5 py-1">
+          <CheckCircle2 className="w-3.5 h-3.5" /> Passed
+        </Badge>
+      );
+    case 'FAILED':
+      return (
+        <Badge variant="outline" className="border-red-500/30 bg-red-500/10 text-red-400 gap-1.5 px-2.5 py-1">
+          <XCircle className="w-3.5 h-3.5" /> Failed
+        </Badge>
+      );
+    case 'ERROR':
+      return (
+        <Badge variant="outline" className="border-orange-500/30 bg-orange-500/10 text-orange-400 gap-1.5 px-2.5 py-1">
+          <AlertTriangle className="w-3.5 h-3.5" /> Error
+        </Badge>
+      );
+    case 'RUNNING':
+      return (
+        <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-400 gap-1.5 px-2.5 py-1 animate-pulse">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Running
+        </Badge>
+      );
+    default:
+      // PENDING or others
+      return (
+        <Badge variant="outline" className="border-slate-500/30 bg-slate-500/10 text-slate-400 gap-1.5 px-2.5 py-1">
+          <Clock className="w-3.5 h-3.5" /> {status}
+        </Badge>
+      );
+  }
 }
