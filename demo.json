@@ -1,0 +1,96 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ApiScan Demo Task API",
+    "description": "A simple task management API to test the ApiScan upload and parsing workflows.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.apiscan.com/v1",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/tasks": {
+      "get": {
+        "summary": "Retrieve all tasks",
+        "description": "Returns a list of all tasks assigned to the authenticated user.",
+        "responses": {
+          "200": {
+            "description": "A JSON array of tasks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Task"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created successfully"
+          },
+          "400": {
+            "description": "Invalid input data"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Task": {
+        "type": "object",
+        "required": ["id", "title", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "title": {
+            "type": "string",
+            "example": "Finish ApiScan Backend"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "in_progress", "completed"],
+            "example": "in_progress"
+          }
+        }
+      },
+      "TaskInput": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Write unit tests"
+          },
+          "description": {
+            "type": "string",
+            "example": "Cover the projects and specs routers."
+          }
+        }
+      }
+    }
+  }
+}
