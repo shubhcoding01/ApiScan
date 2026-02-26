@@ -119,16 +119,165 @@
 #         "status": "PASSED" if parsed_results["failed"] == 0 else "FAILED",
 #     }
 
-"""
-Celery Task: Execute Test Run (Worker)
 
-Responsibilities:
-- Execute HTTP test cases from the AI Strategy
-- Inject authentication if provided
-- Collect raw results
-- Parse results
-- Send results back to backend
-"""
+# """
+# Celery Task: Execute Test Run (Worker)
+
+# Responsibilities:
+# - Execute HTTP test cases from the AI Strategy
+# - Inject authentication if provided
+# - Collect raw results
+# - Parse results
+# - Send results back to backend
+# """
+
+# import os
+# import requests
+# import logging
+# from worker.app.celery_app import celery_app
+# from worker.app.runner.result_parser import ResultParser
+
+# logger = logging.getLogger(__name__)
+
+# BACKEND_API = os.getenv("BACKEND_API_URL", "http://localhost:8000/api")
+
+
+# @celery_app.task(
+#     name="tasks.execute_test_run",
+#     bind=True,
+#     autoretry_for=(Exception,),
+#     retry_backoff=10,
+#     retry_kwargs={"max_retries": 3},
+# )
+# def execute_test_run(self, payload: dict):
+#     """
+#     Executes tests from a strategy payload.
+#     """
+
+#     # ---------------------------------------------------------
+#     # 1. Required Payload Fields
+#     # ---------------------------------------------------------
+#     test_run_id = payload.get("test_run_id")
+#     base_url = payload.get("base_url")
+
+#     if not test_run_id or not base_url:
+#         raise ValueError("Payload must contain test_run_id and base_url")
+
+#     strategy = payload.get("strategy", {})
+
+#     # ---------------------------------------------------------
+#     # 2. Authentication Injection (Optional)
+#     # ---------------------------------------------------------
+#     global_headers = {}
+
+#     auth = strategy.get("auth", {})
+#     bearer_token = auth.get("bearer_token")
+
+#     if bearer_token:
+#         global_headers["Authorization"] = f"Bearer {bearer_token}"
+
+#     # ---------------------------------------------------------
+#     # 3. Flatten Strategy → Test Cases
+#     # ---------------------------------------------------------
+#     test_cases_to_run = []
+
+#     # Preferred structure: test_scenarios → test_cases
+#     for scenario in strategy.get("test_scenarios", []):
+#         scenario_endpoint = scenario.get("endpoint", "")
+#         scenario_method = scenario.get("method", "GET")
+
+#         for case in scenario.get("test_cases", []):
+#             case.setdefault("endpoint", scenario_endpoint)
+#             case.setdefault("method", scenario_method)
+#             test_cases_to_run.append(case)
+
+#     # Fallback: test_cases at root
+#     if not test_cases_to_run:
+#         test_cases_to_run = strategy.get("test_cases", [])
+
+#     logger.info(
+#         f"🚀 Executing {len(test_cases_to_run)} tests for Run {test_run_id}"
+#     )
+
+#     raw_results = []
+
+#     # ---------------------------------------------------------
+#     # 4. Execute Test Cases
+#     # ---------------------------------------------------------
+#     for tc in test_cases_to_run:
+#         try:
+#             endpoint = tc.get("endpoint", "")
+#             method = tc.get("method", "GET")
+
+#             full_url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
+
+#             headers = {
+#                 **global_headers,
+#                 **tc.get("headers", {})
+#             }
+
+#             response = requests.request(
+#                 method=method,
+#                 url=full_url,
+#                 headers=headers,
+#                 json=tc.get("body"),
+#                 params=tc.get("query_params"),
+#                 timeout=10,
+#             )
+
+#             raw_results.append({
+#                 "test_case_id": tc.get("id"),
+#                 "name": tc.get("name", "Unnamed Test"),
+#                 "method": method,
+#                 "endpoint": endpoint,
+#                 "status_code": response.status_code,
+#                 "result": "PASS" if 200 <= response.status_code < 300 else "FAIL",
+#                 "response_body": response.text[:2000],
+#             })
+
+#         except Exception as e:
+#             raw_results.append({
+#                 "test_case_id": tc.get("id"),
+#                 "name": tc.get("name", "Unnamed Test"),
+#                 "method": tc.get("method"),
+#                 "endpoint": tc.get("endpoint"),
+#                 "status_code": 0,
+#                 "result": "ERROR",
+#                 "error_message": str(e),
+#             })
+
+#     # ---------------------------------------------------------
+#     # 5. Parse Results
+#     # ---------------------------------------------------------
+#     parsed_results = ResultParser.parse(raw_results)
+
+#     # Safety defaults (NO KeyError EVER)
+#     parsed_results.setdefault("passed", 0)
+#     parsed_results.setdefault("failed", 0)
+#     parsed_results.setdefault("total", len(raw_results))
+#     parsed_results.setdefault("results", raw_results)
+
+#     # ---------------------------------------------------------
+#     # 6. Send Results Back to Backend
+#     # ---------------------------------------------------------
+#     try:
+#         requests.post(
+#             f"{BACKEND_API}/test-runs/{test_run_id}/complete",
+#             json=parsed_results,
+#             timeout=10,
+#         )
+#     except Exception as e:
+#         logger.error(f"❌ Failed to report results to backend: {e}")
+
+#     # ---------------------------------------------------------
+#     # 7. Final Task Status
+#     # ---------------------------------------------------------
+#     return {
+#         "test_run_id": test_run_id,
+#         "status": "PASSED" if parsed_results["failed"] == 0 else "FAILED",
+#     }
+
+
 
 import os
 import requests
@@ -138,7 +287,8 @@ from worker.app.runner.result_parser import ResultParser
 
 logger = logging.getLogger(__name__)
 
-BACKEND_API = os.getenv("BACKEND_API_URL", "http://localhost:8000/api")
+# 👇 FIX 1: Default to 'backend' for Docker networking
+BACKEND_API = os.getenv("BACKEND_API_URL", "http://backend:8000")
 
 
 @celery_app.task(
@@ -207,6 +357,9 @@ def execute_test_run(self, payload: dict):
         try:
             endpoint = tc.get("endpoint", "")
             method = tc.get("method", "GET")
+            
+            # 👇 FIX 2: Get the AI's expected status code (Default to 200 if not specified)
+            expected_status = tc.get("expected_status", 200)
 
             full_url = f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}"
 
@@ -224,22 +377,30 @@ def execute_test_run(self, payload: dict):
                 timeout=10,
             )
 
+            # 👇 FIX 3: Dynamic PASS/FAIL based on expected_status
+            # We allow a match, or if it expects a 200, we accept anything in the 2xx range
+            actual_status = response.status_code
+            if actual_status == expected_status or (expected_status == 200 and 200 <= actual_status < 300):
+                result_status = "PASS"
+            else:
+                result_status = "FAIL"
+
             raw_results.append({
                 "test_case_id": tc.get("id"),
                 "name": tc.get("name", "Unnamed Test"),
                 "method": method,
                 "endpoint": endpoint,
-                "status_code": response.status_code,
-                "result": "PASS" if 200 <= response.status_code < 300 else "FAIL",
-                "response_body": response.text[:2000],
+                "status_code": actual_status,
+                "result": result_status, 
+                "response_body": response.text[:2000], # Safely truncate giant bodies
             })
 
         except Exception as e:
             raw_results.append({
                 "test_case_id": tc.get("id"),
                 "name": tc.get("name", "Unnamed Test"),
-                "method": tc.get("method"),
-                "endpoint": tc.get("endpoint"),
+                "method": tc.get("method", "UNKNOWN"),
+                "endpoint": tc.get("endpoint", "UNKNOWN"),
                 "status_code": 0,
                 "result": "ERROR",
                 "error_message": str(e),
@@ -248,11 +409,12 @@ def execute_test_run(self, payload: dict):
     # ---------------------------------------------------------
     # 5. Parse Results
     # ---------------------------------------------------------
+    # Assuming ResultParser calculates counts based on the raw_results array
     parsed_results = ResultParser.parse(raw_results)
 
     # Safety defaults (NO KeyError EVER)
-    parsed_results.setdefault("passed", 0)
-    parsed_results.setdefault("failed", 0)
+    parsed_results.setdefault("passed", len([r for r in raw_results if r["result"] == "PASS"]))
+    parsed_results.setdefault("failed", len([r for r in raw_results if r["result"] == "FAIL"]))
     parsed_results.setdefault("total", len(raw_results))
     parsed_results.setdefault("results", raw_results)
 
@@ -260,11 +422,17 @@ def execute_test_run(self, payload: dict):
     # 6. Send Results Back to Backend
     # ---------------------------------------------------------
     try:
-        requests.post(
-            f"{BACKEND_API}/test-runs/{test_run_id}/complete",
+        # Note: Ensure the URL exactly matches your FastAPI router
+        webhook_url = f"{BACKEND_API}/test-runs/{test_run_id}/complete"
+        logger.info(f"Reporting results to: {webhook_url}")
+        
+        response = requests.post(
+            webhook_url,
             json=parsed_results,
             timeout=10,
         )
+        response.raise_for_status() # Logs an error if the backend rejects the payload
+        
     except Exception as e:
         logger.error(f"❌ Failed to report results to backend: {e}")
 
